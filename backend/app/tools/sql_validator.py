@@ -36,31 +36,70 @@ ALLOWED_TABLES: set[str] = {
 
 ALLOWED_COLUMNS: dict[str, set[str]] = {
     "case_master": {
-        "case_id", "case_no", "crime_no", "crime_registered_date",
-        "police_person_id", "police_station_id", "case_category_id",
-        "gravity_offence_id", "crime_major_head_id", "crime_minor_head_id",
-        "case_status_id", "court_id", "incident_from_date", "incident_to_date",
-        "latitude", "longitude", "brief_facts",
+        "case_id",
+        "case_no",
+        "crime_no",
+        "crime_registered_date",
+        "police_person_id",
+        "police_station_id",
+        "case_category_id",
+        "gravity_offence_id",
+        "crime_major_head_id",
+        "crime_minor_head_id",
+        "case_status_id",
+        "court_id",
+        "incident_from_date",
+        "incident_to_date",
+        "latitude",
+        "longitude",
+        "brief_facts",
     },
     "complainant_details": {
-        "complainant_id", "case_id", "name", "age", "gender", "address", "phone",
+        "complainant_id",
+        "case_id",
+        "name",
+        "age",
+        "gender",
+        "address",
+        "phone",
     },
     "victim": {
-        "victim_id", "case_id", "name", "age", "gender", "address",
-        "caste_id", "religion_id", "occupation_id",
+        "victim_id",
+        "case_id",
+        "name",
+        "age",
+        "gender",
+        "address",
+        "caste_id",
+        "religion_id",
+        "occupation_id",
     },
     "accused": {
-        "accused_id", "case_id", "name", "age", "gender", "address",
-        "caste_id", "religion_id", "occupation_id",
+        "accused_id",
+        "case_id",
+        "name",
+        "age",
+        "gender",
+        "address",
+        "caste_id",
+        "religion_id",
+        "occupation_id",
     },
     "arrest_surrender": {
-        "arrest_id", "case_id", "accused_name", "arrest_date",
-        "surrender_date", "arrested_by",
+        "arrest_id",
+        "case_id",
+        "accused_name",
+        "arrest_date",
+        "surrender_date",
+        "arrested_by",
     },
     "act_section_association": {"id", "case_id", "act_id", "section_id"},
     "chargesheet_details": {
-        "chargesheet_id", "case_id", "chargesheet_date",
-        "investigating_officer", "chargesheet_number",
+        "chargesheet_id",
+        "case_id",
+        "chargesheet_date",
+        "investigating_officer",
+        "chargesheet_number",
     },
     "state": {"state_id", "state_name"},
     "district": {"district_id", "district_name", "state_id"},
@@ -69,8 +108,12 @@ ALLOWED_COLUMNS: dict[str, set[str]] = {
     "rank": {"rank_id", "rank_name"},
     "designation": {"designation_id", "designation_name"},
     "employee": {
-        "employee_id", "name", "badge_number", "rank_id",
-        "designation_id", "unit_id",
+        "employee_id",
+        "name",
+        "badge_number",
+        "rank_id",
+        "designation_id",
+        "unit_id",
     },
     "case_category": {"case_category_id", "category_name"},
     "gravity_offence": {"gravity_offence_id", "gravity_name"},
@@ -138,9 +181,7 @@ def validate_sql(sql: str) -> str:
 
     stmt_type = stmt.get_type()
     if stmt_type and stmt_type.upper() != "SELECT":
-        raise SqlValidationError(
-            f"Only SELECT queries are allowed. Got: {stmt_type.upper()}"
-        )
+        raise SqlValidationError(f"Only SELECT queries are allowed. Got: {stmt_type.upper()}")
 
     if not stmt_type:
         for token in stmt.tokens:

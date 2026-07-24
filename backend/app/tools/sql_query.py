@@ -85,9 +85,7 @@ class SqlQueryTool:
 
         llm = get_llm()
         messages = [
-            SystemMessage(
-                content=SQL_GENERATION_SYSTEM_PROMPT.format(schema=SCHEMA_DESCRIPTION)
-            ),
+            SystemMessage(content=SQL_GENERATION_SYSTEM_PROMPT.format(schema=SCHEMA_DESCRIPTION)),
             HumanMessage(content=question),
         ]
         response = await llm.ainvoke(messages)
@@ -131,9 +129,7 @@ class SqlQueryTool:
             },
         )
 
-    def _format_results(
-        self, columns: list[str], rows: list[tuple[Any, ...]]
-    ) -> str:
+    def _format_results(self, columns: list[str], rows: list[tuple[Any, ...]]) -> str:
         if not rows:
             return "No results found."
 

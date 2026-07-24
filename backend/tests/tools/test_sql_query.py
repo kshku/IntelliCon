@@ -29,9 +29,7 @@ class TestSqlQueryTool:
 
     @pytest.mark.asyncio
     async def test_invalid_sql_generation(self):
-        with patch.object(
-            self.tool, "_generate_sql", new_callable=AsyncMock
-        ) as mock_gen:
+        with patch.object(self.tool, "_generate_sql", new_callable=AsyncMock) as mock_gen:
             mock_gen.return_value = "INSERT INTO case_master VALUES (1)"
             result = await self.tool.execute(question="Add a case")
             assert result.success is False
@@ -40,12 +38,8 @@ class TestSqlQueryTool:
     @pytest.mark.asyncio
     async def test_valid_query_execution(self):
         with (
-            patch.object(
-                self.tool, "_generate_sql", new_callable=AsyncMock
-            ) as mock_gen,
-            patch.object(
-                self.tool, "_execute_query", new_callable=AsyncMock
-            ) as mock_exec,
+            patch.object(self.tool, "_generate_sql", new_callable=AsyncMock) as mock_gen,
+            patch.object(self.tool, "_execute_query", new_callable=AsyncMock) as mock_exec,
         ):
             mock_gen.return_value = "SELECT COUNT(*) FROM case_master"
             mock_exec.return_value = ToolResult(
@@ -58,12 +52,8 @@ class TestSqlQueryTool:
     @pytest.mark.asyncio
     async def test_query_timeout(self):
         with (
-            patch.object(
-                self.tool, "_generate_sql", new_callable=AsyncMock
-            ) as mock_gen,
-            patch.object(
-                self.tool, "_execute_query", new_callable=AsyncMock
-            ) as mock_exec,
+            patch.object(self.tool, "_generate_sql", new_callable=AsyncMock) as mock_gen,
+            patch.object(self.tool, "_execute_query", new_callable=AsyncMock) as mock_exec,
         ):
             mock_gen.return_value = "SELECT * FROM case_master"
             mock_exec.side_effect = TimeoutError()
@@ -85,7 +75,5 @@ class TestSqlQueryTool:
         assert "KA-002" in formatted
 
     def test_format_results_null_values(self):
-        formatted = self.tool._format_results(
-            ["col1"], [(None,)]
-        )
+        formatted = self.tool._format_results(["col1"], [(None,)])
         assert "NULL" in formatted
