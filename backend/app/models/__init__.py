@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from app.models.case import (
     ActSectionAssociation,
     Accused,
@@ -7,8 +9,17 @@ from app.models.case import (
     ComplainantDetails,
     Victim,
 )
-from app.models.geography import Court, District, State, Unit
-from app.models.personnel import Designation, Employee, Rank
+from app.models.geography import (
+    Court,
+    District,
+    State,
+    Unit,
+)
+from app.models.personnel import (
+    Designation,
+    Employee,
+    Rank,
+)
 from app.models.reference import (
     Act,
     CaseCategory,
