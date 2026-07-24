@@ -17,8 +17,8 @@ from sqlalchemy.orm import Session
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.db.base import Base  # noqa: E402
-from app.models import (  # noqa: E402
+from app.db.base import Base  # noqa: E402, I001
+from app.models import (  # noqa: E402, I001
     Act,
     ActSectionAssociation,
     Accused,

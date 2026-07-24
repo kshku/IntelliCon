@@ -1,12 +1,11 @@
 from logging.config import fileConfig
 
-from sqlalchemy import pool
-from sqlalchemy import engine_from_config
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
 from app.db.base import Base
-from app.models import *  # noqa: F401, F403 — ensures all models are registered
+from app.models import *  # noqa: F401, F403
 
 config = context.config
 
