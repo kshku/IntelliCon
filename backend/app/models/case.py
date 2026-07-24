@@ -21,18 +21,10 @@ if TYPE_CHECKING:
 class CaseMaster(Base):
     __tablename__ = "case_master"
 
-    case_id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
-    case_no: Mapped[str] = mapped_column(
-        String(50), nullable=False, unique=True
-    )
-    crime_no: Mapped[str | None] = mapped_column(
-        String(50), nullable=True, unique=True
-    )
-    crime_registered_date: Mapped[str | None] = mapped_column(
-        String(20), nullable=True
-    )
+    case_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    case_no: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    crime_no: Mapped[str | None] = mapped_column(String(50), nullable=True, unique=True)
+    crime_registered_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
     police_person_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("employee.employee_id"),
@@ -58,9 +50,7 @@ class CaseMaster(Base):
         ForeignKey("crime_head.crime_head_id"),
         nullable=True,
     )
-    crime_minor_head_id: Mapped[int | None] = mapped_column(
-        Integer, nullable=True
-    )
+    crime_minor_head_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     case_status_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("case_status_master.case_status_id"),
@@ -71,12 +61,8 @@ class CaseMaster(Base):
         ForeignKey("court.court_id"),
         nullable=True,
     )
-    incident_from_date: Mapped[str | None] = mapped_column(
-        String(20), nullable=True
-    )
-    incident_to_date: Mapped[str | None] = mapped_column(
-        String(20), nullable=True
-    )
+    incident_from_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    incident_to_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     brief_facts: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -85,45 +71,25 @@ class CaseMaster(Base):
         back_populates="cases",
         foreign_keys=[police_person_id],
     )
-    police_station: Mapped[Unit | None] = relationship(
-        foreign_keys=[police_station_id]
-    )
-    category: Mapped[CaseCategory | None] = relationship(
-        back_populates="cases"
-    )
-    gravity: Mapped[GravityOffence | None] = relationship(
-        back_populates="cases"
-    )
-    crime_head: Mapped[CrimeHead | None] = relationship(
-        foreign_keys=[crime_major_head_id]
-    )
-    status: Mapped[CaseStatusMaster | None] = relationship(
-        back_populates="cases"
-    )
+    police_station: Mapped[Unit | None] = relationship(foreign_keys=[police_station_id])
+    category: Mapped[CaseCategory | None] = relationship(back_populates="cases")
+    gravity: Mapped[GravityOffence | None] = relationship(back_populates="cases")
+    crime_head: Mapped[CrimeHead | None] = relationship(foreign_keys=[crime_major_head_id])
+    status: Mapped[CaseStatusMaster | None] = relationship(back_populates="cases")
     court: Mapped[Court | None] = relationship(back_populates="cases")
 
-    complainants: Mapped[list[ComplainantDetails]] = relationship(
-        back_populates="case"
-    )
+    complainants: Mapped[list[ComplainantDetails]] = relationship(back_populates="case")
     victims: Mapped[list[Victim]] = relationship(back_populates="case")
     accused: Mapped[list[Accused]] = relationship(back_populates="case")
-    arrests: Mapped[list[ArrestSurrender]] = relationship(
-        back_populates="case"
-    )
-    act_sections: Mapped[list[ActSectionAssociation]] = relationship(
-        back_populates="case"
-    )
-    chargesheets: Mapped[list[ChargesheetDetails]] = relationship(
-        back_populates="case"
-    )
+    arrests: Mapped[list[ArrestSurrender]] = relationship(back_populates="case")
+    act_sections: Mapped[list[ActSectionAssociation]] = relationship(back_populates="case")
+    chargesheets: Mapped[list[ChargesheetDetails]] = relationship(back_populates="case")
 
 
 class ComplainantDetails(Base):
     __tablename__ = "complainant_details"
 
-    complainant_id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    complainant_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     case_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("case_master.case_id"),
@@ -135,17 +101,13 @@ class ComplainantDetails(Base):
     address: Mapped[str | None] = mapped_column(Text, nullable=True)
     phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
-    case: Mapped[CaseMaster] = relationship(
-        back_populates="complainants"
-    )
+    case: Mapped[CaseMaster] = relationship(back_populates="complainants")
 
 
 class Victim(Base):
     __tablename__ = "victim"
 
-    victim_id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    victim_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     case_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("case_master.case_id"),
@@ -156,12 +118,8 @@ class Victim(Base):
     gender: Mapped[str | None] = mapped_column(String(10), nullable=True)
     address: Mapped[str | None] = mapped_column(Text, nullable=True)
     caste_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    religion_id: Mapped[int | None] = mapped_column(
-        Integer, nullable=True
-    )
-    occupation_id: Mapped[int | None] = mapped_column(
-        Integer, nullable=True
-    )
+    religion_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    occupation_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     case: Mapped[CaseMaster] = relationship(back_populates="victims")
 
@@ -169,9 +127,7 @@ class Victim(Base):
 class Accused(Base):
     __tablename__ = "accused"
 
-    accused_id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    accused_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     case_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("case_master.case_id"),
@@ -182,12 +138,8 @@ class Accused(Base):
     gender: Mapped[str | None] = mapped_column(String(10), nullable=True)
     address: Mapped[str | None] = mapped_column(Text, nullable=True)
     caste_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    religion_id: Mapped[int | None] = mapped_column(
-        Integer, nullable=True
-    )
-    occupation_id: Mapped[int | None] = mapped_column(
-        Integer, nullable=True
-    )
+    religion_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    occupation_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     case: Mapped[CaseMaster] = relationship(back_populates="accused")
 
@@ -195,26 +147,16 @@ class Accused(Base):
 class ArrestSurrender(Base):
     __tablename__ = "arrest_surrender"
 
-    arrest_id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    arrest_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     case_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("case_master.case_id"),
         nullable=False,
     )
-    accused_name: Mapped[str] = mapped_column(
-        String(150), nullable=False
-    )
-    arrest_date: Mapped[str | None] = mapped_column(
-        String(20), nullable=True
-    )
-    surrender_date: Mapped[str | None] = mapped_column(
-        String(20), nullable=True
-    )
-    arrested_by: Mapped[str | None] = mapped_column(
-        String(150), nullable=True
-    )
+    accused_name: Mapped[str] = mapped_column(String(150), nullable=False)
+    arrest_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    surrender_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    arrested_by: Mapped[str | None] = mapped_column(String(150), nullable=True)
 
     case: Mapped[CaseMaster] = relationship(back_populates="arrests")
 
@@ -222,9 +164,7 @@ class ArrestSurrender(Base):
 class ActSectionAssociation(Base):
     __tablename__ = "act_section_association"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     case_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("case_master.case_id"),
@@ -233,32 +173,20 @@ class ActSectionAssociation(Base):
     act_id: Mapped[int] = mapped_column(Integer, nullable=False)
     section_id: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    case: Mapped[CaseMaster] = relationship(
-        back_populates="act_sections"
-    )
+    case: Mapped[CaseMaster] = relationship(back_populates="act_sections")
 
 
 class ChargesheetDetails(Base):
     __tablename__ = "chargesheet_details"
 
-    chargesheet_id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    chargesheet_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     case_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("case_master.case_id"),
         nullable=False,
     )
-    chargesheet_date: Mapped[str | None] = mapped_column(
-        String(20), nullable=True
-    )
-    investigating_officer: Mapped[str | None] = mapped_column(
-        String(150), nullable=True
-    )
-    chargesheet_number: Mapped[str | None] = mapped_column(
-        String(50), nullable=True
-    )
+    chargesheet_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    investigating_officer: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    chargesheet_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
-    case: Mapped[CaseMaster] = relationship(
-        back_populates="chargesheets"
-    )
+    case: Mapped[CaseMaster] = relationship(back_populates="chargesheets")

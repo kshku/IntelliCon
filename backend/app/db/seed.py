@@ -51,57 +51,126 @@ Faker.seed(42)
 random.seed(42)
 
 KARNATAKA_DISTRICTS = [
-    "Bengaluru Urban", "Bengaluru Rural", "Mysuru", "Mangaluru",
-    "Hubballi-Dharwad", "Belagavi", "Kalaburagi", "Ballari",
-    "Vijayapura", "Bidar", "Raichur", "Koppal",
-    "Gadag", "Haveri", "Davanagere", "Shivamogga",
-    "Udupi", "Uttara Kannada", "Kodagu", "Hassan",
-    "Tumakuru", "Chikkaballapura", "Kolar", "Ramanagara",
-    "Chamarajanagar", "Yadgir", "Chitradurga", "Mandya",
+    "Bengaluru Urban",
+    "Bengaluru Rural",
+    "Mysuru",
+    "Mangaluru",
+    "Hubballi-Dharwad",
+    "Belagavi",
+    "Kalaburagi",
+    "Ballari",
+    "Vijayapura",
+    "Bidar",
+    "Raichur",
+    "Koppal",
+    "Gadag",
+    "Haveri",
+    "Davanagere",
+    "Shivamogga",
+    "Udupi",
+    "Uttara Kannada",
+    "Kodagu",
+    "Hassan",
+    "Tumakuru",
+    "Chikkaballapura",
+    "Kolar",
+    "Ramanagara",
+    "Chamarajanagar",
+    "Yadgir",
+    "Chitradurga",
+    "Mandya",
 ]
 
 CRIME_HEADS = [
-    "Murder", "Rape", "Robbery", "Dacoity", "Kidnapping",
-    "Theft", "Burglary", "Assault", "Cybercrime",
-    "Drug Offences", "Fraud", "Domestic Violence",
-    "Human Trafficking", "Arms Act", "Extortion",
+    "Murder",
+    "Rape",
+    "Robbery",
+    "Dacoity",
+    "Kidnapping",
+    "Theft",
+    "Burglary",
+    "Assault",
+    "Cybercrime",
+    "Drug Offences",
+    "Fraud",
+    "Domestic Violence",
+    "Human Trafficking",
+    "Arms Act",
+    "Extortion",
 ]
 
 CASE_CATEGORIES = ["Cognizable", "Non-Cognizable", "Compoundable"]
 GRAVITY_LEVELS = ["Petty", "Serious", "Heinous"]
 CASE_STATUSES = [
-    "Registered", "Under Investigation", "Chargesheet Filed",
-    "Convicted", "Acquitted", "Closed", "Pending Trial",
+    "Registered",
+    "Under Investigation",
+    "Chargesheet Filed",
+    "Convicted",
+    "Acquitted",
+    "Closed",
+    "Pending Trial",
 ]
 COURT_TYPES = [
-    "Magistrate Court", "Sessions Court",
-    "High Court", "Special Court",
+    "Magistrate Court",
+    "Sessions Court",
+    "High Court",
+    "Special Court",
 ]
 UNIT_TYPES = [
-    "Police Station", "Sub-Division", "Circle", "District HQ",
+    "Police Station",
+    "Sub-Division",
+    "Circle",
+    "District HQ",
 ]
 RANKS = [
-    "Constable", "Head Constable", "ASI", "SI", "Inspector",
-    "DSP", "ACP", "DCP", "Commissioner",
+    "Constable",
+    "Head Constable",
+    "ASI",
+    "SI",
+    "Inspector",
+    "DSP",
+    "ACP",
+    "DCP",
+    "Commissioner",
 ]
 DESIGNATIONS = [
-    "Patrol Officer", "Investigating Officer",
-    "Station House Officer", "Sub-Inspector",
-    "Deputy SP", "Additional SP",
+    "Patrol Officer",
+    "Investigating Officer",
+    "Station House Officer",
+    "Sub-Inspector",
+    "Deputy SP",
+    "Additional SP",
 ]
 CASTES = [
-    "General", "SC", "ST", "OBC",
-    "Category I", "Category II", "Category IIA",
+    "General",
+    "SC",
+    "ST",
+    "OBC",
+    "Category I",
+    "Category II",
+    "Category IIA",
 ]
 RELIGIONS = [
-    "Hindu", "Muslim", "Christian",
-    "Sikh", "Buddhist", "Jain",
+    "Hindu",
+    "Muslim",
+    "Christian",
+    "Sikh",
+    "Buddhist",
+    "Jain",
 ]
 OCCUPATIONS = [
-    "Government Employee", "Private Employee",
-    "Business", "Student", "Farmer",
-    "Daily Wage Labourer", "Retired", "Unemployed",
-    "Doctor", "Lawyer", "Teacher", "Engineer",
+    "Government Employee",
+    "Private Employee",
+    "Business",
+    "Student",
+    "Farmer",
+    "Daily Wage Labourer",
+    "Retired",
+    "Unemployed",
+    "Doctor",
+    "Lawyer",
+    "Teacher",
+    "Engineer",
 ]
 
 SECTIONS_DATA = [
@@ -275,9 +344,7 @@ def seed_reference_data(session: Session) -> dict:
 
     for hid in random.sample(head_ids, min(10, len(head_ids))):
         for _ in range(random.randint(1, 3)):
-            act_name, sec_num = random.choice(
-                list(section_map.keys())
-            )
+            act_name, sec_num = random.choice(list(section_map.keys()))
             sid, aid = section_map[(act_name, sec_num)]
             chas = CrimeHeadActSection(
                 crime_head_id=hid,
@@ -317,18 +384,11 @@ def _pick_emp_id(ref: dict) -> int:
     return random.choice(ref["emp_ids"])
 
 
-def _random_date(
-    year: int, month: int, day: int, offset: int
-) -> str:
-    return (
-        f"{year}-{month:02d}-"
-        f"{min(28, day + random.randint(1, offset)):02d}"
-    )
+def _random_date(year: int, month: int, day: int, offset: int) -> str:
+    return f"{year}-{month:02d}-{min(28, day + random.randint(1, offset)):02d}"
 
 
-def seed_cases(
-    session: Session, ref: dict, count: int = 120
-) -> None:
+def seed_cases(session: Session, ref: dict, count: int = 120) -> None:
     """Generate `count` realistic FIR cases with related records."""
     for _ in range(count):
         year = random.choice([2022, 2023, 2024, 2025])
@@ -346,9 +406,7 @@ def seed_cases(
         gravity = random.choice(ref["grav_ids"])
         status = random.choice(ref["status_ids"])
 
-        facts = fake.paragraph(
-            nb_sentences=random.randint(3, 8)
-        )
+        facts = fake.paragraph(nb_sentences=random.randint(3, 8))
 
         case = CaseMaster(
             case_no=case_no,
@@ -361,9 +419,7 @@ def seed_cases(
             crime_major_head_id=random.choice(ref["head_ids"]),
             case_status_id=status,
             court_id=random.choice(ref["court_ids"]),
-            incident_from_date=_random_date(
-                year, month, day, 5
-            ),
+            incident_from_date=_random_date(year, month, day, 5),
             incident_to_date=reg_date,
             latitude=round(lat, 6),
             longitude=round(lng, 6),
@@ -391,9 +447,7 @@ def seed_cases(
                 address=fake.address(),
                 caste_id=random.choice(ref["caste_ids"]),
                 religion_id=random.choice(ref["religion_ids"]),
-                occupation_id=random.choice(
-                    ref["occupation_ids"]
-                ),
+                occupation_id=random.choice(ref["occupation_ids"]),
             )
             session.add(v)
 
@@ -410,9 +464,7 @@ def seed_cases(
                 address=fake.address(),
                 caste_id=random.choice(ref["caste_ids"]),
                 religion_id=random.choice(ref["religion_ids"]),
-                occupation_id=random.choice(
-                    ref["occupation_ids"]
-                ),
+                occupation_id=random.choice(ref["occupation_ids"]),
             )
             session.add(a)
 
@@ -429,24 +481,16 @@ def seed_cases(
                 ar = ArrestSurrender(
                     case_id=case.case_id,
                     accused_name=aname,
-                    arrest_date=(
-                        _random_date(year, month, day, 15)
-                        if has_arrest
-                        else None
-                    ),
+                    arrest_date=(_random_date(year, month, day, 15) if has_arrest else None),
                     surrender_date=(
-                        _random_date(year, month, day, 30)
-                        if random.random() < 0.3
-                        else None
+                        _random_date(year, month, day, 30) if random.random() < 0.3 else None
                     ),
                     arrested_by=_pick_emp_id(ref),
                 )
                 session.add(ar)
 
         for _ in range(random.randint(1, 3)):
-            act_name, sec_num = random.choice(
-                list(ref["section_map"].keys())
-            )
+            act_name, sec_num = random.choice(list(ref["section_map"].keys()))
             sid, aid = ref["section_map"][(act_name, sec_num)]
             asa = ActSectionAssociation(
                 case_id=case.case_id,
@@ -457,17 +501,12 @@ def seed_cases(
 
         if random.random() < 0.4:
             cs_month = min(12, month + random.randint(1, 6))
-            cs_date = (
-                f"{year}-{cs_month:02d}-"
-                f"{random.randint(1, 28):02d}"
-            )
+            cs_date = f"{year}-{cs_month:02d}-{random.randint(1, 28):02d}"
             cs = ChargesheetDetails(
                 case_id=case.case_id,
                 chargesheet_date=cs_date,
                 investigating_officer=_pick_emp_id(ref),
-                chargesheet_number=(
-                    f"CS/{year}/{random.randint(1000, 9999)}"
-                ),
+                chargesheet_number=(f"CS/{year}/{random.randint(1000, 9999)}"),
             )
             session.add(cs)
 
@@ -484,14 +523,9 @@ def main() -> None:
     Base.metadata.create_all(engine)
 
     with Session(engine) as session:
-        existing = session.execute(
-            text("SELECT COUNT(*) FROM case_master")
-        ).scalar()
+        existing = session.execute(text("SELECT COUNT(*) FROM case_master")).scalar()
         if existing and existing > 0:
-            print(
-                f"Database already has {existing} cases. "
-                "Skipping seed."
-            )
+            print(f"Database already has {existing} cases. Skipping seed.")
             return
 
         print("Seeding reference data...")
