@@ -18,3 +18,7 @@ frontend/dist/
 .vscode/
 *.swp
 *.swo
+
+# Agent Directories
+.superpowers/
+docs/superpowers/
