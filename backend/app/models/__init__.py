@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from app.models.case import (
-    ActSectionAssociation,
     Accused,
+    ActSectionAssociation,
     ArrestSurrender,
     CaseMaster,
     ChargesheetDetails,
