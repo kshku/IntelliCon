@@ -7,6 +7,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ChatPage } from './pages/ChatPage';
 import { NetworkPage } from './pages/NetworkPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { AdminPage } from './pages/AdminPage';
 import { useAuthStore } from './stores/authStore';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
             <Route path="chat" element={<ChatPage />} />
             <Route path="network" element={<NetworkPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="admin" element={<AdminPage />} />
           </Route>
         </Route>
 

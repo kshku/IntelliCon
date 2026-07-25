@@ -7,6 +7,7 @@ import {
   MessageSquareCode,
   Network,
   Settings,
+  Users,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 
@@ -37,6 +38,7 @@ export const Sidebar: React.FC = () => {
     { nameKey: 'conversational_ai', path: '/chat', icon: MessageSquareCode },
     { nameKey: 'network_analysis', path: '/network', icon: Network },
     { nameKey: 'system_settings', path: '/settings', icon: Settings, minRole: 'supervisor' },
+    { nameKey: 'user_management', path: '/admin', icon: Users, minRole: 'admin' },
   ];
 
   const filteredNavItems = navItems.filter((item) => hasRole(item.minRole));
