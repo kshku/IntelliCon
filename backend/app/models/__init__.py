@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.models.audit import AuditTrail
 from app.models.case import (
     Accused,
     ActSectionAssociation,
@@ -30,6 +31,7 @@ __all__ = [
     "ActSectionAssociation",
     "Accused",
     "ArrestSurrender",
+    "AuditTrail",
     "CaseCategory",
     "CaseMaster",
     "CaseStatusMaster",

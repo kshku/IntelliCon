@@ -28,6 +28,7 @@ export const useWebSocket = () => {
     updateLastMessageContent,
     addToolCallToLastMessage,
     updateToolResultInLastMessage,
+    updateLastMessageReasoning,
   } = useChatStore();
 
   const connect = useCallback(() => {
@@ -84,6 +85,9 @@ export const useWebSocket = () => {
             case 'tool_result':
               updateToolResultInLastMessage(data.tool, data.output);
               break;
+            case 'reasoning':
+              updateLastMessageReasoning(data.content);
+              break;
             case 'done':
               setStreaming(false);
               break;
@@ -115,6 +119,7 @@ export const useWebSocket = () => {
     updateLastMessageContent,
     addToolCallToLastMessage,
     updateToolResultInLastMessage,
+    updateLastMessageReasoning,
   ]);
 
   const sendMessage = useCallback((text: string) => {

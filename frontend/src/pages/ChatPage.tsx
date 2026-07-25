@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Sparkles, Terminal, Activity, Wifi, WifiOff } from 'lucide-react';
+import { Send, Sparkles, Terminal, Activity, Wifi, WifiOff, ChevronDown, ChevronRight, Brain } from 'lucide-react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useChatStore } from '../stores/useChatStore';
 
@@ -9,7 +9,17 @@ export const ChatPage: React.FC = () => {
   const { isConnected, sendMessage } = useWebSocket();
   const { messages, isStreaming } = useChatStore();
   const [input, setInput] = useState('');
+  const [expandedReasoning, setExpandedReasoning] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const toggleReasoning = (msgId: string) => {
+    setExpandedReasoning((prev) => {
+      const next = new Set(prev);
+      if (next.has(msgId)) next.delete(msgId);
+      else next.add(msgId);
+      return next;
+    });
+  };
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,6 +128,29 @@ export const ChatPage: React.FC = () => {
                       )
                     )}
                   </div>
+
+                  {/* Show reasoning toggle */}
+                  {msg.role === 'assistant' && msg.reasoning && (
+                    <div className="rounded-btn border border-purple-100 bg-purple-50/50 overflow-hidden">
+                      <button
+                        onClick={() => toggleReasoning(msg.id)}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-[12px] font-bold text-purple-700 hover:bg-purple-100/50 transition-colors cursor-pointer"
+                      >
+                        <Brain className="w-3.5 h-3.5" />
+                        <span>Show Reasoning</span>
+                        {expandedReasoning.has(msg.id) ? (
+                          <ChevronDown className="w-3.5 h-3.5 ml-auto" />
+                        ) : (
+                          <ChevronRight className="w-3.5 h-3.5 ml-auto" />
+                        )}
+                      </button>
+                      {expandedReasoning.has(msg.id) && (
+                        <div className="px-3 pb-3 text-[12px] font-mono text-purple-900 whitespace-pre-wrap leading-relaxed border-t border-purple-100 pt-2">
+                          {msg.reasoning}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Tool execution audit trace */}
                   {msg.toolCalls && msg.toolCalls.length > 0 && (
