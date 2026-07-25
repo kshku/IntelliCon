@@ -92,3 +92,25 @@ class AnalyticsPrediction(Base):
     period_date = Column(TIMESTAMP, nullable=True)
     model_version = Column(String(50), nullable=True)
     computed_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+
+
+class AnalyticsHotspot(Base):
+    __tablename__ = "analytics_hotspots"
+    __table_args__ = (
+        Index("idx_analytics_hotspots_cluster", "cluster_id"),
+        Index("idx_analytics_hotspots_crime_type", "crime_type"),
+        Index("idx_analytics_hotspots_period", "period_start", "period_end"),
+        {"schema": "analytics"},
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    cluster_id = Column(Integer, nullable=False)
+    center_lat = Column(Float, nullable=True)
+    center_lng = Column(Float, nullable=True)
+    crime_type = Column(String(200), nullable=True)
+    case_count = Column(Integer, nullable=True)
+    severity = Column(String(20), nullable=True)
+    period_start = Column(TIMESTAMP, nullable=True)
+    period_end = Column(TIMESTAMP, nullable=True)
+    radius_km = Column(Float, nullable=True)
+    computed_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
