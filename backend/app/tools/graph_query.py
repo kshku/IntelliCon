@@ -90,11 +90,17 @@ class GraphQueryTool:
             },
             "name_a": {
                 "type": "string",
-                "description": "Name of the first person (for neighbors, network, shortest_path, shared_cases)",
+                "description": (
+                    "Name of the first person "
+                    "(for neighbors, network, shortest_path, shared_cases)"
+                ),
             },
             "name_b": {
                 "type": "string",
-                "description": "Name of the second person (for shortest_path and shared_cases only)",
+                "description": (
+                    "Name of the second person "
+                    "(for shortest_path and shared_cases only)"
+                ),
             },
             "district": {
                 "type": "string",
@@ -107,9 +113,11 @@ class GraphQueryTool:
     async def execute(self, **kwargs: Any) -> ToolResult:
         query_type = kwargs.get("query_type", "")
         if query_type not in CYPHER_TEMPLATES:
+            valid = list(CYPHER_TEMPLATES.keys())
             return ToolResult(
                 success=False,
-                error=f"Unknown query_type '{query_type}'. Valid types: {list(CYPHER_TEMPLATES.keys())}",
+                error=f"Unknown query_type '{query_type}'. "
+                      f"Valid types: {valid}",
             )
 
         params = self._build_params(query_type, kwargs)
@@ -209,8 +217,11 @@ class GraphQueryTool:
         if query_type == "degree_centrality":
             lines = []
             for r in rows:
-                lines.append(f"- {r.get('name', '?')} (ID: {r.get('pg_id', '?')}): {r.get('degree', 0)} connections")
-            return f"Top repeat offenders:\n" + "\n".join(lines)
+                name = r.get("name", "?")
+                pg_id = r.get("pg_id", "?")
+                degree = r.get("degree", 0)
+                lines.append(f"- {name} (ID: {pg_id}): {degree} connections")
+            return "Top repeat offenders:\n" + "\n".join(lines)
 
         if query_type == "shared_cases":
             lines = []

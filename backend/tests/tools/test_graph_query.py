@@ -1,9 +1,9 @@
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
-from app.tools.graph_query import GraphQueryTool, CYPHER_TEMPLATES, QUERY_TIMEOUT
+from app.tools.graph_query import CYPHER_TEMPLATES, QUERY_TIMEOUT, GraphQueryTool
 
 
 @pytest.fixture
@@ -18,7 +18,10 @@ def test_tool_metadata(tool):
 
 
 def test_tool_has_all_query_types(tool):
-    expected = {"neighbors_1hop", "network_2hop", "shortest_path", "degree_centrality", "shared_cases"}
+    expected = {
+        "neighbors_1hop", "network_2hop", "shortest_path",
+        "degree_centrality", "shared_cases",
+    }
     actual = set(tool.input_schema["properties"]["query_type"]["enum"])
     assert actual == expected
 
