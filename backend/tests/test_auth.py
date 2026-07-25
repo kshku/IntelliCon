@@ -1,6 +1,8 @@
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi.testclient import TestClient
+
+_FAKE_HASH = "$2b$12$fakeshashedpasswordforTestingOnly00000000000000"
 
 
 def _mock_user(
@@ -11,13 +13,11 @@ def _mock_user(
     role="investigator",
     active=True,
 ):
-    from app.auth import hash_password
-
     user = MagicMock()
     user.user_id = user_id
     user.employee_id = employee_id
     user.username = username
-    user.password_hash = hash_password(password)
+    user.password_hash = _FAKE_HASH
     user.role = role
     user.active = active
     return user
@@ -52,7 +52,8 @@ def _get_client(user=None):
 
 
 class TestLogin:
-    def test_login_success(self):
+    @patch("app.api.auth.verify_password", return_value=True)
+    def test_login_success(self, _mock_verify):
         user = _mock_user()
         client = _get_client(user)
         response = client.post(
@@ -66,7 +67,8 @@ class TestLogin:
         assert data["role"] == "investigator"
         assert data["username"] == "testuser"
 
-    def test_login_wrong_password(self):
+    @patch("app.api.auth.verify_password", return_value=False)
+    def test_login_wrong_password(self, _mock_verify):
         user = _mock_user()
         client = _get_client(user)
         response = client.post(
@@ -83,7 +85,8 @@ class TestLogin:
         )
         assert response.status_code == 401
 
-    def test_login_inactive_user(self):
+    @patch("app.api.auth.verify_password", return_value=True)
+    def test_login_inactive_user(self, _mock_verify):
         user = _mock_user(active=False)
         client = _get_client(user)
         response = client.post(
@@ -99,7 +102,8 @@ class TestMe:
         response = client.get("/auth/me")
         assert response.status_code == 401
 
-    def test_me_with_valid_token(self):
+    @patch("app.api.auth.verify_password", return_value=True)
+    def test_me_with_valid_token(self, _mock_verify):
         user = _mock_user()
         client = _get_client(user)
         login_resp = client.post(
@@ -121,7 +125,8 @@ class TestMe:
 
 
 class TestRefresh:
-    def test_token_refresh(self):
+    @patch("app.api.auth.verify_password", return_value=True)
+    def test_token_refresh(self, _mock_verify):
         user = _mock_user()
         client = _get_client(user)
         login_resp = client.post(

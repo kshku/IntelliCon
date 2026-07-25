@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -25,7 +25,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
-    expire = datetime.now(datetime.UTC) + (
+    expire = datetime.now(UTC) + (
         expires_delta or timedelta(minutes=settings.JWT_EXPIRATION_MINUTES)
     )
     to_encode.update({"exp": expire})
