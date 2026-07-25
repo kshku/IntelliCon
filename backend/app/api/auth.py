@@ -8,8 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth import (
     create_access_token,
     get_current_user,
-    hash_password,
-    require_role,
     verify_password,
 )
 from app.config import settings

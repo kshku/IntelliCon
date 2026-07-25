@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from fastapi.testclient import TestClient
 
@@ -36,12 +36,14 @@ async def _mock_get_session():
 
 
 def _get_client(user=None):
-    from app.main import app
     from app.db.session import get_session
+    from app.main import app
 
     if user is not None:
+
         async def dep():
             yield _make_mock_session(user)
+
         app.dependency_overrides[get_session] = dep
     else:
         app.dependency_overrides[get_session] = _mock_get_session
