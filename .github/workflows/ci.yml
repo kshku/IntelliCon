@@ -15,6 +15,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
       - name: Install dependencies
         run: |
           pip install -r backend/requirements.txt -r backend/requirements-dev.txt
@@ -56,6 +60,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
       - name: Install dependencies
         run: pip install -r backend/requirements.txt -r backend/requirements-dev.txt
       - name: Run tests
@@ -88,9 +96,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
       - name: Build backend
-        run: docker build -t intellicon-backend ./backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: false
+          tags: intellicon-backend
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Build frontend
-        run: docker build -t intellicon-frontend ./frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: false
+          tags: intellicon-frontend
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Build analytics
-        run: docker build -t intellicon-analytics ./analytics
+        uses: docker/build-push-action@v6
+        with:
+          context: ./analytics
+          push: false
+          tags: intellicon-analytics
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
