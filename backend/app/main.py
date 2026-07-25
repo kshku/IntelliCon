@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.admin import router as admin_router
 from app.api.audit import router as audit_router
 from app.api.auth import router as auth_router
 from app.api.graph import router as graph_router
@@ -27,6 +28,7 @@ app.include_router(auth_router)
 app.include_router(graph_router)
 app.include_router(pdf_router)
 app.include_router(translation_router, prefix="/api")
+app.include_router(admin_router, prefix="/admin")
 
 
 @app.get("/health")
