@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 
 from app.db.graph_schema import GRAPH_SCHEMA
-from app.db.neo4j import get_driver, run_write
+from app.db.neo4j import async_run_write, get_driver
 from app.db.sync import sync_all
 
 router = APIRouter(prefix="/api/graph", tags=["graph"])
@@ -24,7 +24,7 @@ async def init_schema():
         get_driver()
         statements = GRAPH_SCHEMA["constraints"] + GRAPH_SCHEMA["indexes"]
         for statement in statements:
-            run_write(statement)
+            await async_run_write(statement)
         return {"status": "ok", "applied": len(statements)}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))

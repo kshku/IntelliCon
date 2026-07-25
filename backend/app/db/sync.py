@@ -5,7 +5,7 @@ from typing import Any
 
 from sqlalchemy import text
 
-from app.db.neo4j import run_write
+from app.db.neo4j import async_run_write
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ async def _sync_cases() -> int:
     if not rows:
         return 0
 
-    run_write(
+    await async_run_write(
         """
         UNWIND $batch AS row
         MERGE (c:Case {pg_id: row.pg_id})
@@ -96,7 +96,7 @@ async def _sync_persons_by_role(table: str, role: str) -> int:
     for row in rows:
         row["role"] = role
 
-    run_write(
+    await async_run_write(
         """
         UNWIND $batch AS row
         MERGE (p:Person {pg_id: row.pg_id, role: row.role})
@@ -120,7 +120,7 @@ async def _sync_employees() -> int:
     if not rows:
         return 0
 
-    run_write(
+    await async_run_write(
         """
         UNWIND $batch AS row
         MERGE (e:Employee {pg_id: row.pg_id})
@@ -144,7 +144,7 @@ async def _sync_police_stations() -> int:
     if not rows:
         return 0
 
-    run_write(
+    await async_run_write(
         """
         UNWIND $batch AS row
         MERGE (ps:PoliceStation {pg_id: row.pg_id})
@@ -167,7 +167,7 @@ async def _sync_courts() -> int:
     if not rows:
         return 0
 
-    run_write(
+    await async_run_write(
         """
         UNWIND $batch AS row
         MERGE (ct:Court {pg_id: row.pg_id})
@@ -203,7 +203,7 @@ async def _link_persons_to_cases(table: str, id_col: str, rel_type: str) -> int:
     if table == "complainant_details":
         role = "COMPLAINANT"
 
-    run_write(
+    await async_run_write(
         f"""
         UNWIND $batch AS row
         MATCH (p:Person {{pg_id: row.person_id, role: '{role}'}})
@@ -224,7 +224,7 @@ async def _link_arrests() -> int:
     if not rows:
         return 0
 
-    run_write(
+    await async_run_write(
         """
         UNWIND $batch AS row
         MATCH (p:Person {name: row.name, role: 'ACCUSED'})
@@ -246,7 +246,7 @@ async def _link_case_io() -> int:
     if not rows:
         return 0
 
-    run_write(
+    await async_run_write(
         """
         UNWIND $batch AS row
         MATCH (e:Employee {pg_id: row.police_person_id})
@@ -267,7 +267,7 @@ async def _link_case_court() -> int:
     if not rows:
         return 0
 
-    run_write(
+    await async_run_write(
         """
         UNWIND $batch AS row
         MATCH (c:Case {pg_id: row.case_id})
@@ -288,7 +288,7 @@ async def _link_case_station() -> int:
     if not rows:
         return 0
 
-    run_write(
+    await async_run_write(
         """
         UNWIND $batch AS row
         MATCH (c:Case {pg_id: row.case_id})
@@ -313,7 +313,7 @@ async def _sync_co_accused() -> int:
     if not rows:
         return 0
 
-    run_write(
+    await async_run_write(
         """
         UNWIND $batch AS row
         MATCH (p1:Person {pg_id: row.person1_id, role: 'ACCUSED'})

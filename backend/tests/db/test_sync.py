@@ -19,7 +19,7 @@ class TestSyncCases:
     async def test_sync_cases_with_data(self) -> None:
         with (
             patch("app.db.sync._fetch_all", new_callable=AsyncMock) as mock_fetch,
-            patch("app.db.sync.run_write") as mock_write,
+            patch("app.db.sync.async_run_write", new_callable=AsyncMock) as mock_write,
         ):
             mock_fetch.return_value = [{"pg_id": 1, "case_no": "KA-001", "status": "Open"}]
             count = await _sync_cases()
