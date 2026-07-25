@@ -25,6 +25,7 @@ from app.models.reference import (
     ReligionMaster,
     Section,
 )
+from app.models.user import User
 
 __all__ = [
     "Act",
@@ -52,5 +53,6 @@ __all__ = [
     "Section",
     "State",
     "Unit",
+    "User",
     "Victim",
 ]
