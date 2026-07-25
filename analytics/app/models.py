@@ -94,6 +94,24 @@ class AnalyticsPrediction(Base):
     computed_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
 
 
+class AnalyticsTrend(Base):
+    __tablename__ = "analytics_trends"
+    __table_args__ = (
+        Index("idx_analytics_trends_type", "metric_type"),
+        Index("idx_analytics_trends_dimension", "dimension", "dimension_value"),
+        Index("idx_analytics_trends_period", "period_date"),
+        {"schema": "analytics"},
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    metric_type = Column(String(50), nullable=False)
+    dimension = Column(String(50), nullable=False)
+    dimension_value = Column(String(200), nullable=True)
+    period_date = Column(TIMESTAMP, nullable=True)
+    value = Column(Float, nullable=True)
+    computed_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+
+
 class AnalyticsHotspot(Base):
     __tablename__ = "analytics_hotspots"
     __table_args__ = (
