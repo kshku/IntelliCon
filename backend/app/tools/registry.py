@@ -8,5 +8,9 @@ tool_registry = ToolRegistry()
 
 
 def register_default_tools() -> None:
-    tool_registry.register(CalculatorTool())
-    tool_registry.register(SqlQueryTool())
+    if not tool_registry.list_tools():
+        tool_registry.register(CalculatorTool())
+        tool_registry.register(SqlQueryTool())
+
+
+register_default_tools()
