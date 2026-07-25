@@ -33,10 +33,10 @@ export const ChatPage: React.FC = () => {
   }, [messages, isStreaming]);
 
   const suggestions = [
-    "Analyze property crime trends in Koramangala",
-    "List all active investigations under IPC section 379",
-    "Identify connection pathways between repeat offender 'Raju' and 'Kumar'",
-    "Generate a summary report for violent crimes in Yeshwanthpur division"
+    t('chat.suggestion_1'),
+    t('chat.suggestion_2'),
+    t('chat.suggestion_3'),
+    t('chat.suggestion_4'),
   ];
 
   return (
@@ -48,8 +48,8 @@ export const ChatPage: React.FC = () => {
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-[16px] font-bold text-heading-dark leading-tight">AI Investigative Assistant</h2>
-            <span className="text-[12px] text-gray-text font-medium">Powered by LangGraph ReAct Agent</span>
+            <h2 className="text-[16px] font-bold text-heading-dark leading-tight">{t('chat.ai_investigative_assistant')}</h2>
+            <span className="text-[12px] text-gray-text font-medium">{t('chat.powered_by')}</span>
           </div>
         </div>
 
@@ -58,12 +58,12 @@ export const ChatPage: React.FC = () => {
           {isConnected ? (
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 text-[12px] font-bold">
               <Wifi className="w-3.5 h-3.5" />
-              <span>Online</span>
+              <span>{t('common.online')}</span>
             </div>
           ) : (
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[12px] font-bold animate-pulse">
               <WifiOff className="w-3.5 h-3.5" />
-              <span>Connecting...</span>
+              <span>{t('common.connecting')}</span>
             </div>
           )}
         </div>
@@ -77,9 +77,9 @@ export const ChatPage: React.FC = () => {
               <Sparkles className="w-8 h-8" />
             </div>
             <div className="space-y-3">
-              <h3 className="text-[20px] font-bold text-heading-dark">Ask the Crime Database Assistant</h3>
+              <h3 className="text-[20px] font-bold text-heading-dark">{t('chat.ask_crime_database')}</h3>
               <p className="text-[14px] text-gray-text font-medium leading-relaxed">
-                Query FIR details, search suspect profiles, discover accomplice networks, or generate summaries using conversational English or Kannada.
+                {t('chat.chat_description')}
               </p>
             </div>
             
@@ -157,32 +157,32 @@ export const ChatPage: React.FC = () => {
                     <div className="rounded-btn border border-slate-100 bg-slate-100/50 p-3 space-y-2 max-w-full overflow-hidden">
                       <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                         <Terminal className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Investigation Log</span>
+                        <span>{t('chat.investigation_log')}</span>
                       </div>
                       <div className="space-y-2">
-                        {msg.toolCalls.map((t, tIdx) => (
+                        {msg.toolCalls.map((tc, tIdx) => (
                           <div key={tIdx} className="bg-white border border-slate-200/60 rounded-btn p-2 text-[12px] font-mono shadow-sm">
                             <div className="flex items-center justify-between">
                               <span className="text-slate-700 font-bold flex items-center gap-1.5">
                                 <Activity className="w-3 h-3 text-blue-500 animate-pulse" />
-                                {t.name}
+                                {tc.name}
                               </span>
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                t.status === 'completed' 
+                                tc.status === 'completed' 
                                   ? 'bg-green-50 text-green-700' 
                                   : 'bg-blue-50 text-blue-700'
                               }`}>
-                                {t.status}
+                                {tc.status}
                               </span>
                             </div>
-                            {t.args && (
+                            {tc.args && (
                               <div className="mt-1 bg-slate-50 p-1.5 rounded text-slate-500 overflow-x-auto text-[11px]">
-                                <span className="font-bold text-slate-600">Args:</span> {JSON.stringify(t.args)}
+                                <span className="font-bold text-slate-600">{t('chat.args')}</span> {JSON.stringify(tc.args)}
                               </div>
                             )}
-                            {t.output && (
+                            {tc.output && (
                               <div className="mt-1.5 border-t border-slate-100 pt-1.5 text-slate-600 overflow-x-auto text-[11px] max-h-24 overflow-y-auto">
-                                <span className="font-bold text-slate-700">Output:</span> {t.output}
+                                <span className="font-bold text-slate-700">{t('chat.output')}</span> {tc.output}
                               </div>
                             )}
                           </div>
