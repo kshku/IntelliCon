@@ -19,25 +19,24 @@ def test_tool_metadata(tool):
 
 def test_tool_has_all_query_types(tool):
     expected = {
-        "neighbors_1hop", "network_2hop", "shortest_path",
-        "degree_centrality", "shared_cases",
+        "neighbors_1hop",
+        "network_2hop",
+        "shortest_path",
+        "degree_centrality",
+        "shared_cases",
     }
     actual = set(tool.input_schema["properties"]["query_type"]["enum"])
     assert actual == expected
 
 
 def test_invalid_query_type(tool):
-    result = asyncio.get_event_loop().run_until_complete(
-        tool.execute(query_type="nonexistent")
-    )
+    result = asyncio.get_event_loop().run_until_complete(tool.execute(query_type="nonexistent"))
     assert not result.success
     assert "Unknown query_type" in result.error
 
 
 def test_neighbors_missing_name(tool):
-    result = asyncio.get_event_loop().run_until_complete(
-        tool.execute(query_type="neighbors_1hop")
-    )
+    result = asyncio.get_event_loop().run_until_complete(tool.execute(query_type="neighbors_1hop"))
     assert not result.success
     assert "name_a is required" in result.error
 
@@ -75,10 +74,22 @@ def test_neighbors_1hop_empty_results(tool):
 def test_neighbors_1hop_with_results(tool):
     async def mock_run(cypher, params):
         return [
-            {"person": "Ravi Kumar", "person_role": "ACCUSED", "relationship": "IMPLICATED_IN",
-             "neighbor_type": "Case", "neighbor_name": None, "neighbor_id": 101},
-            {"person": "Ravi Kumar", "person_role": "ACCUSED", "relationship": "CO_ACCUSED",
-             "neighbor_type": "Person", "neighbor_name": "Suresh", "neighbor_id": 202},
+            {
+                "person": "Ravi Kumar",
+                "person_role": "ACCUSED",
+                "relationship": "IMPLICATED_IN",
+                "neighbor_type": "Case",
+                "neighbor_name": None,
+                "neighbor_id": 101,
+            },
+            {
+                "person": "Ravi Kumar",
+                "person_role": "ACCUSED",
+                "relationship": "CO_ACCUSED",
+                "neighbor_type": "Person",
+                "neighbor_name": "Suresh",
+                "neighbor_id": 202,
+            },
         ]
 
     with patch("app.db.neo4j.async_run_query", mock_run):
@@ -95,9 +106,13 @@ def test_neighbors_1hop_with_results(tool):
 def test_shortest_path_found(tool):
     async def mock_run(cypher, params):
         return [
-            {"person_a": "Ravi", "person_b": "Suresh", "hops": 3,
-             "relationships": ["IMPLICATED_IN", "CO_ACCUSED"],
-             "path_nodes": ["Ravi", "Case KA-001", "Suresh"]},
+            {
+                "person_a": "Ravi",
+                "person_b": "Suresh",
+                "hops": 3,
+                "relationships": ["IMPLICATED_IN", "CO_ACCUSED"],
+                "path_nodes": ["Ravi", "Case KA-001", "Suresh"],
+            },
         ]
 
     with patch("app.db.neo4j.async_run_query", mock_run):
@@ -143,10 +158,22 @@ def test_degree_centrality(tool):
 def test_shared_cases(tool):
     async def mock_run(cypher, params):
         return [
-            {"person_a": "Ravi", "person_b": "Suresh", "case_no": "KA-2024-001",
-             "crime_no": "Cr.No.123/2024", "date": "2024-06-15", "status": "Under Investigation"},
-            {"person_a": "Ravi", "person_b": "Suresh", "case_no": "KA-2024-005",
-             "crime_no": "Cr.No.045/2024", "date": "2024-08-20", "status": "Chargesheet Filed"},
+            {
+                "person_a": "Ravi",
+                "person_b": "Suresh",
+                "case_no": "KA-2024-001",
+                "crime_no": "Cr.No.123/2024",
+                "date": "2024-06-15",
+                "status": "Under Investigation",
+            },
+            {
+                "person_a": "Ravi",
+                "person_b": "Suresh",
+                "case_no": "KA-2024-005",
+                "crime_no": "Cr.No.045/2024",
+                "date": "2024-08-20",
+                "status": "Chargesheet Filed",
+            },
         ]
 
     with patch("app.db.neo4j.async_run_query", mock_run):
@@ -164,9 +191,12 @@ def test_shared_cases(tool):
 def test_network_2hop(tool):
     async def mock_run(cypher, params):
         return [
-            {"source": "Ravi", "rel_path": ["IMPLICATED_IN", "CO_ACCUSED"],
-             "node_path": ["Ravi", "Case KA-001", "Suresh"],
-             "node_types": ["Person", "Case", "Person"]},
+            {
+                "source": "Ravi",
+                "rel_path": ["IMPLICATED_IN", "CO_ACCUSED"],
+                "node_path": ["Ravi", "Case KA-001", "Suresh"],
+                "node_types": ["Person", "Case", "Person"],
+            },
         ]
 
     with patch("app.db.neo4j.async_run_query", mock_run):

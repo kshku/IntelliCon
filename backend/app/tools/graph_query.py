@@ -91,15 +91,13 @@ class GraphQueryTool:
             "name_a": {
                 "type": "string",
                 "description": (
-                    "Name of the first person "
-                    "(for neighbors, network, shortest_path, shared_cases)"
+                    "Name of the first person (for neighbors, network, shortest_path, shared_cases)"
                 ),
             },
             "name_b": {
                 "type": "string",
                 "description": (
-                    "Name of the second person "
-                    "(for shortest_path and shared_cases only)"
+                    "Name of the second person (for shortest_path and shared_cases only)"
                 ),
             },
             "district": {
@@ -116,8 +114,7 @@ class GraphQueryTool:
             valid = list(CYPHER_TEMPLATES.keys())
             return ToolResult(
                 success=False,
-                error=f"Unknown query_type '{query_type}'. "
-                      f"Valid types: {valid}",
+                error=f"Unknown query_type '{query_type}'. Valid types: {valid}",
             )
 
         params = self._build_params(query_type, kwargs)
@@ -180,6 +177,7 @@ class GraphQueryTool:
 
     async def _run_query(self, cypher: str, params: dict) -> list[dict]:
         from app.db.neo4j import async_run_query as _async_run_query
+
         return await _async_run_query(cypher, params)
 
     def _format_summary(self, query_type: str, rows: list[dict], kwargs: dict) -> str:
@@ -199,8 +197,7 @@ class GraphQueryTool:
         if query_type == "network_2hop":
             person = kwargs.get("name_a", "Unknown")
             return f"Network for '{person}': {len(rows)} paths found.\n" + "\n".join(
-                f"- Path: {' -> '.join(str(n) for n in r.get('node_path', []))}"
-                for r in rows[:20]
+                f"- Path: {' -> '.join(str(n) for n in r.get('node_path', []))}" for r in rows[:20]
             )
 
         if query_type == "shortest_path":
