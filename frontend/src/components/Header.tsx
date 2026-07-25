@@ -101,6 +101,7 @@ export const Header: React.FC = () => {
             <Bell className="w-5 h-5" strokeWidth={2} />
             <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-danger-red ring-2 ring-white" />
           </button>
+
           <button onClick={() => console.log('Help - not yet implemented')} className="w-10 h-10 rounded-btn hover:bg-bg-light flex items-center justify-center text-slate-500 hover:text-heading-dark transition-colors cursor-pointer">
             <HelpCircle className="w-5 h-5" strokeWidth={2} />
           </button>
