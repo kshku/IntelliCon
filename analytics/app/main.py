@@ -157,8 +157,9 @@ class ExecutionResponse(BaseModel):
 
 
 class TriggerResponse(BaseModel):
-    execution_id: int
     status: str
+    job_name: str
+    message: str
 
 
 @app.get("/jobs", response_model=list[JobResponse])
@@ -195,21 +196,9 @@ def trigger_job(job_name: str) -> TriggerResponse:
     if job_name not in registry:
         raise HTTPException(status_code=404, detail=f"Job '{job_name}' not found")
 
-    session = SessionLocal()
-    execution = JobExecutionLog(
-        job_name=job_name,
-        status="running",
-        started_at=datetime.utcnow(),
-    )
-    session.add(execution)
-    session.commit()
-    session.refresh(execution)
-    execution_id = execution.id
-    session.close()
-
     scheduler.add_job(
         run_job,
-        id=f"{job_name}_manual_{execution_id}",
+        id=f"{job_name}_manual_{datetime.utcnow().timestamp()}",
         name=f"{job_name}_manual",
         kwargs={"job_name": job_name},
         trigger="date",
@@ -217,7 +206,11 @@ def trigger_job(job_name: str) -> TriggerResponse:
         replace_existing=False,
     )
 
-    return TriggerResponse(execution_id=execution_id, status="running")
+    return TriggerResponse(
+        status="triggered",
+        job_name=job_name,
+        message=f"Job '{job_name}' scheduled for immediate execution",
+    )
 
 
 @app.get("/jobs/{job_name}/status", response_model=ExecutionResponse)
