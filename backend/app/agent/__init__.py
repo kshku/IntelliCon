@@ -8,6 +8,7 @@ from app.agent.llm_factory import get_llm
 from app.agent.session import SessionManager
 from app.agent.state import AgentState
 from app.agent.streaming import SSEEvent, stream_agent_response
+from app.agent.system_prompt import get_system_prompt
 from app.config import settings
 from app.tools.base import ToolRegistry
 from app.tools.registry import tool_registry
@@ -18,6 +19,7 @@ __all__ = [
     "SessionManager",
     "create_agent",
     "get_llm",
+    "get_system_prompt",
     "stream_agent_response",
     "tool_registry",
 ]
