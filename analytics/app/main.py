@@ -245,7 +245,14 @@ def get_job_status(job_name: str, session: Session = Depends(get_session)) -> di
             status_code=404, detail=f"No executions found for job '{job_name}'"
         )
 
-    return success_response({"job_name": job_name, "status": execution.status, "next_run_time": None})
+    return success_response({
+        "job_name": job_name,
+        "status": execution.status,
+        "execution_id": execution.id,
+        "started_at": execution.started_at.isoformat() if execution.started_at else None,
+        "completed_at": execution.completed_at.isoformat() if execution.completed_at else None,
+        "next_run_time": None,
+    })
 
 
 @app.get("/executions")
