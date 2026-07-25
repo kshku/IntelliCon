@@ -14,6 +14,7 @@ export interface Message {
   timestamp: string;
   status?: 'sending' | 'streaming' | 'completed' | 'error';
   toolCalls?: ToolCall[];
+  reasoning?: string;
 }
 
 interface ChatState {
@@ -27,6 +28,7 @@ interface ChatState {
   setConnected: (isConnected: boolean) => void;
   addToolCallToLastMessage: (toolName: string, args?: any) => void;
   updateToolResultInLastMessage: (toolName: string, output: string) => void;
+  updateLastMessageReasoning: (content: string) => void;
   clearChat: () => void;
 }
 
@@ -103,6 +105,21 @@ export const useChatStore = create<ChatState>((set) => ({
             }
             return t;
           }),
+        };
+      }
+      return { messages: newMessages };
+    });
+  },
+
+  updateLastMessageReasoning: (content) => {
+    set((state) => {
+      const newMessages = [...state.messages];
+      const lastIdx = newMessages.length - 1;
+      const last = newMessages[lastIdx];
+      if (last && last.role === 'assistant') {
+        newMessages[lastIdx] = {
+          ...last,
+          reasoning: (last.reasoning || '') + content,
         };
       }
       return { messages: newMessages };
