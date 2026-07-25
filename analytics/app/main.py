@@ -1,11 +1,13 @@
 import logging
 import traceback
-from datetime import datetime
+from collections.abc import Generator
+from datetime import datetime, timezone
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 import app.pipelines  # noqa: F401  — triggers @register_job decorators
 from app.config import settings
@@ -30,6 +32,22 @@ jobstores = {
 scheduler = BackgroundScheduler(jobstores=jobstores)
 
 
+def success_response(data, metadata=None):
+    return {
+        "success": True,
+        "data": data,
+        "metadata": metadata or {"timestamp": datetime.now(timezone.utc).isoformat()},
+    }
+
+
+def get_session() -> Generator:
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
 def run_job(job_name: str) -> None:
     """Execute a registered job and log the result."""
     registry = get_registry()
@@ -43,7 +61,7 @@ def run_job(job_name: str) -> None:
     execution = JobExecutionLog(
         job_name=job_name,
         status="running",
-        started_at=datetime.utcnow(),
+        started_at=datetime.now(timezone.utc),
     )
     session.add(execution)
     session.commit()
@@ -57,7 +75,7 @@ def run_job(job_name: str) -> None:
         result = pipeline.run(session)
 
         execution.status = "completed"
-        execution.completed_at = datetime.utcnow()
+        execution.completed_at = datetime.now(timezone.utc)
         execution.rows_processed = result.get("rows_processed", 0)
         execution.metadata_ = result
 
@@ -68,7 +86,7 @@ def run_job(job_name: str) -> None:
         )
     except Exception as e:
         execution.status = "failed"
-        execution.completed_at = datetime.utcnow()
+        execution.completed_at = datetime.now(timezone.utc)
         execution.error_message = traceback.format_exc()
         session.commit()
         logger.error(f"Job '{job_name}' failed (execution_id={execution_id}): {e}")
@@ -162,10 +180,10 @@ class TriggerResponse(BaseModel):
     message: str
 
 
-@app.get("/jobs", response_model=list[JobResponse])
-def list_jobs() -> list[JobResponse]:
+@app.get("/jobs")
+def list_jobs() -> dict:
     registry = get_registry()
-    return [
+    return success_response([
         JobResponse(
             name=job_def.name,
             description=job_def.description,
@@ -173,87 +191,75 @@ def list_jobs() -> list[JobResponse]:
             schedule_kwargs=job_def.schedule_kwargs,
         )
         for job_def in registry.values()
-    ]
+    ])
 
 
-@app.get("/jobs/{job_name}", response_model=JobResponse)
-def get_job(job_name: str) -> JobResponse:
+@app.get("/jobs/{job_name}")
+def get_job(job_name: str) -> dict:
     registry = get_registry()
     if job_name not in registry:
         raise HTTPException(status_code=404, detail=f"Job '{job_name}' not found")
     job_def = registry[job_name]
-    return JobResponse(
+    return success_response(JobResponse(
         name=job_def.name,
         description=job_def.description,
         schedule=job_def.schedule,
         schedule_kwargs=job_def.schedule_kwargs,
-    )
+    ))
 
 
-@app.post("/jobs/{job_name}/trigger", response_model=TriggerResponse)
-def trigger_job(job_name: str) -> TriggerResponse:
+@app.post("/jobs/{job_name}/trigger")
+def trigger_job(job_name: str) -> dict:
     registry = get_registry()
     if job_name not in registry:
         raise HTTPException(status_code=404, detail=f"Job '{job_name}' not found")
 
     scheduler.add_job(
         run_job,
-        id=f"{job_name}_manual_{datetime.utcnow().timestamp()}",
+        id=f"{job_name}_manual_{datetime.now(timezone.utc).timestamp()}",
         name=f"{job_name}_manual",
         kwargs={"job_name": job_name},
         trigger="date",
-        run_date=datetime.utcnow(),
+        run_date=datetime.now(timezone.utc),
         replace_existing=False,
     )
 
-    return TriggerResponse(
+    return success_response(TriggerResponse(
         status="triggered",
         job_name=job_name,
         message=f"Job '{job_name}' scheduled for immediate execution",
-    )
+    ))
 
 
-@app.get("/jobs/{job_name}/status", response_model=ExecutionResponse)
-def get_job_status(job_name: str) -> ExecutionResponse:
-    session = SessionLocal()
+@app.get("/jobs/{job_name}/status")
+def get_job_status(job_name: str, session: Session = Depends(get_session)) -> dict:
     execution = (
         session.query(JobExecutionLog)
         .filter(JobExecutionLog.job_name == job_name)
         .order_by(JobExecutionLog.started_at.desc())
         .first()
     )
-    session.close()
 
     if not execution:
         raise HTTPException(
             status_code=404, detail=f"No executions found for job '{job_name}'"
         )
 
-    return ExecutionResponse(
-        id=execution.id,
-        job_name=execution.job_name,
-        status=execution.status,
-        started_at=execution.started_at,
-        completed_at=execution.completed_at,
-        rows_processed=execution.rows_processed,
-        error_message=execution.error_message,
-        metadata=execution.metadata_,
-    )
+    return success_response({"job_name": job_name, "status": execution.status, "next_run_time": None})
 
 
-@app.get("/executions", response_model=list[ExecutionResponse])
+@app.get("/executions")
 def list_executions(
     job_name: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
-) -> list[ExecutionResponse]:
-    session = SessionLocal()
+    session: Session = Depends(get_session),
+) -> dict:
     query = session.query(JobExecutionLog)
     if job_name:
         query = query.filter(JobExecutionLog.job_name == job_name)
     executions = query.order_by(JobExecutionLog.started_at.desc()).limit(limit).all()
-    session.close()
 
-    return [
+    return success_response([
         ExecutionResponse(
             id=ex.id,
             job_name=ex.job_name,
@@ -265,25 +271,23 @@ def list_executions(
             metadata=ex.metadata_,
         )
         for ex in executions
-    ]
+    ])
 
 
-@app.get("/executions/{execution_id}", response_model=ExecutionResponse)
-def get_execution(execution_id: int) -> ExecutionResponse:
-    session = SessionLocal()
+@app.get("/executions/{execution_id}")
+def get_execution(execution_id: int, session: Session = Depends(get_session)) -> dict:
     execution = (
         session.query(JobExecutionLog)
         .filter(JobExecutionLog.id == execution_id)
         .first()
     )
-    session.close()
 
     if not execution:
         raise HTTPException(
             status_code=404, detail=f"Execution {execution_id} not found"
         )
 
-    return ExecutionResponse(
+    return success_response(ExecutionResponse(
         id=execution.id,
         job_name=execution.job_name,
         status=execution.status,
@@ -292,4 +296,4 @@ def get_execution(execution_id: int) -> ExecutionResponse:
         rows_processed=execution.rows_processed,
         error_message=execution.error_message,
         metadata=execution.metadata_,
-    )
+    ))

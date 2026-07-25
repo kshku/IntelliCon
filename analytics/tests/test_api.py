@@ -16,7 +16,9 @@ def test_health_check():
 def test_list_jobs():
     response = client.get("/jobs")
     assert response.status_code == 200
-    jobs = response.json()
+    body = response.json()
+    assert body["success"] is True
+    jobs = body["data"]
     assert isinstance(jobs, list)
     assert len(jobs) >= 3
     names = [j["name"] for j in jobs]
@@ -28,7 +30,7 @@ def test_list_jobs():
 def test_get_job():
     response = client.get("/jobs/hotspot_detection")
     assert response.status_code == 200
-    data = response.json()
+    data = response.json()["data"]
     assert data["name"] == "hotspot_detection"
     assert data["schedule"] == "cron"
     assert data["schedule_kwargs"]["hour"] == 2
@@ -42,7 +44,7 @@ def test_get_job_not_found():
 def test_list_executions():
     response = client.get("/executions")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert isinstance(response.json()["data"], list)
 
 
 def test_get_execution_not_found():
@@ -53,7 +55,7 @@ def test_get_execution_not_found():
 def test_trigger_job():
     response = client.post("/jobs/hotspot_detection/trigger")
     assert response.status_code == 200
-    data = response.json()
+    data = response.json()["data"]
     assert data["status"] == "triggered"
     assert data["job_name"] == "hotspot_detection"
     assert "message" in data
