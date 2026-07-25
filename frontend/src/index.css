@@ -1,1 +1,72 @@
 @import "tailwindcss";
+
+@theme {
+  /* Typography */
+  --font-sans: "Inter", "Segoe UI", "Roboto", system-ui, -apple-system, sans-serif;
+
+  /* Color System */
+  --color-primary-blue: #2563EB;
+  --color-dark-navy: #0B1F3A;
+  --color-light-blue: #DBEAFE;
+  --color-success-green: #16A34A;
+  --color-warning-amber: #F59E0B;
+  --color-danger-red: #EF4444;
+  --color-purple-accent: #7C3AED;
+  --color-orange-accent: #F97316;
+  --color-teal-accent: #14B8A6;
+  --color-gray-text: #64748B;
+  --color-heading-dark: #0F172A;
+  --color-bg-light: #F6F8FC;
+  --color-border-light: #E8ECF3;
+  --color-hover-light: #F2F5FA;
+
+  /* Border Radii */
+  --radius-custom-lg: 16px;
+  --radius-card: 18px;
+  --radius-btn: 12px;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-bg-light);
+    color: var(--color-heading-dark);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-heading-dark);
+  }
+
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-heading-dark);
+  }
+
+  /* Custom scrollbar matching premium SaaS dashboard feel */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+}
