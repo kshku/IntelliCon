@@ -53,7 +53,7 @@ export const Sidebar: React.FC = () => {
         </div>
         <div className="flex flex-col">
           <span className="text-[15px] font-bold text-white leading-tight">IntelliCon</span>
-          <span className="text-[11px] text-slate-400 font-medium">KSP Intelligence</span>
+          <span className="text-[11px] text-slate-400 font-medium">{t('common.ksp_intelligence')}</span>
         </div>
       </div>
 
@@ -90,7 +90,7 @@ export const Sidebar: React.FC = () => {
 
       <div className="p-4 border-t border-slate-800/80 bg-slate-900/40">
         <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">
-          Active Role
+          {t('common.active_role')}
         </div>
         <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-btn bg-slate-800/50 text-white text-[13px] font-semibold border border-slate-700/30">
           <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">

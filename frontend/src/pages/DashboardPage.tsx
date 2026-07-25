@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   FileText,
   FolderOpen,
@@ -37,11 +38,12 @@ interface RecentCase {
   fir: string;
   type: string;
   station: string;
-  status: 'Closed' | 'Chargesheet Filed' | 'Under Investigation' | 'Pending';
+  status: 'common.closed' | 'common.chargesheet' | 'dashboard.under_investigation' | 'common.pending';
   statusColor: string;
 }
 
 export const DashboardPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [zoomLevel, setZoomLevel] = useState(1);
   const [timeFilter, setTimeFilter] = useState('Last 6 Months');
@@ -49,28 +51,28 @@ export const DashboardPage: React.FC = () => {
 
   // KPI Data Configuration
   const kpis: KpiData[] = [
-    { title: 'Total FIRs', value: '24,532', change: '+8.4%', changeType: 'increase', color: 'bg-blue-500/10 text-blue-600', icon: FileText },
-    { title: 'Registered Cases', value: '18,732', change: '+5.2%', changeType: 'increase', color: 'bg-purple-500/10 text-purple-600', icon: FolderOpen },
-    { title: 'Accused Persons', value: '13,892', change: '+11.1%', changeType: 'increase', color: 'bg-orange-500/10 text-orange-600', icon: Users2 },
-    { title: 'Active Investigations', value: '7,896', change: '+3.7%', changeType: 'increase', color: 'bg-green-500/10 text-green-600', icon: Activity },
-    { title: 'Alerts', value: '56', change: '-12.4%', changeType: 'decrease', color: 'bg-red-500/10 text-red-600', icon: AlertTriangle },
+    { title: t('dashboard.total_firs'), value: '24,532', change: '+8.4%', changeType: 'increase', color: 'bg-blue-500/10 text-blue-600', icon: FileText },
+    { title: t('dashboard.registered_cases'), value: '18,732', change: '+5.2%', changeType: 'increase', color: 'bg-purple-500/10 text-purple-600', icon: FolderOpen },
+    { title: t('dashboard.accused_persons'), value: '13,892', change: '+11.1%', changeType: 'increase', color: 'bg-orange-500/10 text-orange-600', icon: Users2 },
+    { title: t('dashboard.active_investigations'), value: '7,896', change: '+3.7%', changeType: 'increase', color: 'bg-green-500/10 text-green-600', icon: Activity },
+    { title: t('dashboard.alerts'), value: '56', change: '-12.4%', changeType: 'decrease', color: 'bg-red-500/10 text-red-600', icon: AlertTriangle },
   ];
 
   // Alerts Timeline Configuration
   const alerts: AlertData[] = [
-    { title: 'Robbery Spike', type: 'Property Crime', time: '10 mins ago', desc: '4 robberies reported in Whitefield in a 2-hour window.', color: 'bg-red-500 text-white' },
-    { title: 'Repeat Offender', type: 'Alert Trigger', time: '45 mins ago', desc: 'Accused Raju (Bail) spotted near Koramangala block.', color: 'bg-orange-500 text-white' },
-    { title: 'Gang Association', type: 'Intelligence Match', time: '2 hours ago', desc: 'Co-accused link discovered via transaction trail.', color: 'bg-purple-500 text-white' },
-    { title: 'Financial Alert', type: 'Audit Match', time: '4 hours ago', desc: 'INR 15L flagged under case FIR-482-2025.', color: 'bg-blue-500 text-white' },
-    { title: 'Night Activity', type: 'Patrol Dispatch', time: '6 hours ago', desc: 'Unusual gathering near HSR Layout industrial area.', color: 'bg-teal-500 text-white' },
+    { title: t('dashboard.robbery_spike'), type: t('dashboard.property_crime'), time: t('dashboard.mins_ago'), desc: '4 robberies reported in Whitefield in a 2-hour window.', color: 'bg-red-500 text-white' },
+    { title: t('dashboard.repeat_offender'), type: t('dashboard.alert_trigger'), time: t('dashboard.mins_ago'), desc: 'Accused Raju (Bail) spotted near Koramangala block.', color: 'bg-orange-500 text-white' },
+    { title: t('dashboard.gang_association'), type: t('dashboard.intelligence_match'), time: t('dashboard.hours_ago'), desc: 'Co-accused link discovered via transaction trail.', color: 'bg-purple-500 text-white' },
+    { title: t('dashboard.financial_alert'), type: t('dashboard.audit_match'), time: t('dashboard.hours_ago'), desc: 'INR 15L flagged under case FIR-482-2025.', color: 'bg-blue-500 text-white' },
+    { title: t('dashboard.night_activity'), type: t('dashboard.patrol_dispatch'), time: t('dashboard.hours_ago'), desc: 'Unusual gathering near HSR Layout industrial area.', color: 'bg-teal-500 text-white' },
   ];
 
   // Recent Case List
   const recentCases: RecentCase[] = [
-    { fir: 'FIR-0432/2026', type: 'Theft / IPC 379', station: 'Koramangala PS', status: 'Under Investigation', statusColor: 'bg-blue-50 text-blue-700 border-blue-200' },
-    { fir: 'FIR-0431/2026', type: 'Assault / IPC 324', station: 'Shivajinagar PS', status: 'Chargesheet Filed', statusColor: 'bg-purple-50 text-purple-700 border-purple-200' },
-    { fir: 'FIR-0430/2026', type: 'Fraud / IPC 420', station: 'HSR Layout PS', status: 'Pending', statusColor: 'bg-amber-50 text-amber-700 border-amber-200' },
-    { fir: 'FIR-0429/2026', type: 'Property / IPC 447', station: 'Whitefield PS', status: 'Closed', statusColor: 'bg-green-50 text-green-700 border-green-200' },
+    { fir: 'FIR-0432/2026', type: 'Theft / IPC 379', station: 'Koramangala PS', status: 'dashboard.under_investigation', statusColor: 'bg-blue-50 text-blue-700 border-blue-200' },
+    { fir: 'FIR-0431/2026', type: 'Assault / IPC 324', station: 'Shivajinagar PS', status: 'common.chargesheet', statusColor: 'bg-purple-50 text-purple-700 border-purple-200' },
+    { fir: 'FIR-0430/2026', type: 'Fraud / IPC 420', station: 'HSR Layout PS', status: 'common.pending', statusColor: 'bg-amber-50 text-amber-700 border-amber-200' },
+    { fir: 'FIR-0429/2026', type: 'Property / IPC 447', station: 'Whitefield PS', status: 'common.closed', statusColor: 'bg-green-50 text-green-700 border-green-200' },
   ];
 
   // Hotspot Map Pin Coordinates (Bangalore Map Mockup)
@@ -119,7 +121,7 @@ export const DashboardPage: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <div className="w-2 h-5 bg-primary-blue rounded-full" />
-              <h2 className="text-[18px] font-bold text-heading-dark">Crime Trend Overview</h2>
+              <h2 className="text-[18px] font-bold text-heading-dark">{t('dashboard.crime_trend_overview')}</h2>
             </div>
             {/* Filter Dropdown */}
             <div className="relative">
@@ -128,9 +130,9 @@ export const DashboardPage: React.FC = () => {
                 onChange={(e) => setTimeFilter(e.target.value)}
                 className="appearance-none bg-bg-light border border-border-light text-[13px] font-semibold text-slate-700 px-4 py-2 pr-9 rounded-btn focus:outline-none focus:border-primary-blue cursor-pointer"
               >
-                <option>Last 30 Days</option>
-                <option>Last 6 Months</option>
-                <option>Last Year</option>
+                <option>{t('dashboard.last_30_days')}</option>
+                <option>{t('dashboard.last_6_months')}</option>
+                <option>{t('dashboard.last_year')}</option>
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
             </div>
@@ -194,19 +196,19 @@ export const DashboardPage: React.FC = () => {
           <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-4 text-[12px] font-bold text-slate-500 select-none">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-primary-blue inline-block" />
-              <span>Total Crimes</span>
+              <span>{t('dashboard.total_crimes')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-purple-accent inline-block" />
-              <span>IPC Crimes</span>
+              <span>{t('dashboard.ipc_crimes')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-orange-accent inline-block" />
-              <span>Property</span>
+              <span>{t('dashboard.property')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-danger-red inline-block" />
-              <span>Violent</span>
+              <span>{t('dashboard.violent')}</span>
             </div>
           </div>
         </div>
@@ -216,7 +218,7 @@ export const DashboardPage: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="w-2 h-5 bg-orange-500 rounded-full" />
-              <h2 className="text-[18px] font-bold text-heading-dark">Crime Hotspots Map</h2>
+              <h2 className="text-[18px] font-bold text-heading-dark">{t('dashboard.crime_hotspots_map')}</h2>
             </div>
             
             <div className="relative">
@@ -225,9 +227,9 @@ export const DashboardPage: React.FC = () => {
                 onChange={(e) => setHotspotFilter(e.target.value)}
                 className="appearance-none bg-bg-light border border-border-light text-[13px] font-semibold text-slate-700 px-4 py-2 pr-9 rounded-btn focus:outline-none focus:border-primary-blue cursor-pointer"
               >
-                <option>Last 24 Hours</option>
-                <option>Last 30 Days</option>
-                <option>Last 90 Days</option>
+                <option>{t('dashboard.last_24_hours')}</option>
+                <option>{t('dashboard.last_30_days')}</option>
+                <option>{t('dashboard.last_90_days')}</option>
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
             </div>
@@ -292,7 +294,7 @@ export const DashboardPage: React.FC = () => {
             {/* Layers controls */}
             <button className="absolute top-3 right-3 bg-white/95 backdrop-blur shadow rounded-btn border border-slate-200 px-3 py-2 text-[12px] font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-1.5 cursor-pointer z-10">
               <Layers className="w-3.5 h-3.5" />
-              <span>Layers</span>
+              <span>{t('common.layers')}</span>
             </button>
           </div>
         </div>
@@ -301,7 +303,7 @@ export const DashboardPage: React.FC = () => {
         <div className="lg:col-span-3 bg-white rounded-card border border-border-light p-6 shadow-sm flex flex-col justify-between">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-2 h-5 bg-red-500 rounded-full" />
-            <h2 className="text-[18px] font-bold text-heading-dark">Recent Alerts</h2>
+            <h2 className="text-[18px] font-bold text-heading-dark">{t('dashboard.recent_alerts')}</h2>
           </div>
 
           <div className="flex-1 space-y-4 overflow-y-auto max-h-[250px] pr-1">
@@ -342,7 +344,7 @@ export const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Crime by Category Donut Chart */}
         <div className="bg-white rounded-card border border-border-light p-5 shadow-sm flex flex-col justify-between min-h-[240px]">
-          <span className="text-[14px] font-bold text-heading-dark mb-4 block">Crime by Category</span>
+          <span className="text-[14px] font-bold text-heading-dark mb-4 block">{t('dashboard.crime_by_category')}</span>
           
           <div className="flex-1 flex items-center justify-center gap-4">
             {/* SVG Donut */}
@@ -357,30 +359,30 @@ export const DashboardPage: React.FC = () => {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center select-none">
                 <span className="text-[16px] font-bold text-heading-dark">35%</span>
-                <span className="text-[9px] text-gray-text font-bold">Theft</span>
+                <span className="text-[9px] text-gray-text font-bold">{t('dashboard.theft')}</span>
               </div>
             </div>
 
             {/* List legends */}
             <div className="flex-1 text-[11px] font-bold text-slate-500 space-y-1.5">
               <div className="flex items-center gap-1.5 justify-between">
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-blue-500" />Theft</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-blue-500" />{t('dashboard.theft')}</span>
                 <span className="text-slate-700">35%</span>
               </div>
               <div className="flex items-center gap-1.5 justify-between">
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-purple-500" />Robbery</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-purple-500" />{t('dashboard.robbery')}</span>
                 <span className="text-slate-700">25%</span>
               </div>
               <div className="flex items-center gap-1.5 justify-between">
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-orange-500" />Assault</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-orange-500" />{t('dashboard.assault')}</span>
                 <span className="text-slate-700">20%</span>
               </div>
               <div className="flex items-center gap-1.5 justify-between">
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-green-500" />Women</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-green-500" />{t('dashboard.women')}</span>
                 <span className="text-slate-700">12%</span>
               </div>
               <div className="flex items-center gap-1.5 justify-between">
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-red-500" />Others</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-red-500" />{t('dashboard.others')}</span>
                 <span className="text-slate-700">8%</span>
               </div>
             </div>
@@ -389,7 +391,7 @@ export const DashboardPage: React.FC = () => {
 
         {/* Top Crime Locations Horizontal Bar */}
         <div className="bg-white rounded-card border border-border-light p-5 shadow-sm flex flex-col justify-between min-h-[240px]">
-          <span className="text-[14px] font-bold text-heading-dark mb-4 block">Top Crime Locations</span>
+          <span className="text-[14px] font-bold text-heading-dark mb-4 block">{t('dashboard.top_crime_locations')}</span>
           
           <div className="flex-1 space-y-3.5">
             {[
@@ -414,7 +416,7 @@ export const DashboardPage: React.FC = () => {
 
         {/* Case Status Donut Chart */}
         <div className="bg-white rounded-card border border-border-light p-5 shadow-sm flex flex-col justify-between min-h-[240px]">
-          <span className="text-[14px] font-bold text-heading-dark mb-4 block">Case Status Distribution</span>
+          <span className="text-[14px] font-bold text-heading-dark mb-4 block">{t('dashboard.case_status_distribution')}</span>
           
           <div className="flex-1 flex items-center justify-center gap-4">
             {/* SVG Donut */}
@@ -428,26 +430,26 @@ export const DashboardPage: React.FC = () => {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center select-none">
                 <span className="text-[16px] font-bold text-heading-dark">45%</span>
-                <span className="text-[9px] text-gray-text font-bold">Closed</span>
+                <span className="text-[9px] text-gray-text font-bold">{t('common.closed')}</span>
               </div>
             </div>
 
             {/* List legends */}
             <div className="flex-1 text-[11px] font-bold text-slate-500 space-y-1.5">
               <div className="flex items-center gap-1.5 justify-between">
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-green-600" />Closed</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-green-600" />{t('common.closed')}</span>
                 <span className="text-slate-700">45%</span>
               </div>
               <div className="flex items-center gap-1.5 justify-between">
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-purple-500" />Chargesheet</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-purple-500" />{t('common.chargesheet')}</span>
                 <span className="text-slate-700">25%</span>
               </div>
               <div className="flex items-center gap-1.5 justify-between">
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-blue-500" />Active</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-blue-500" />{t('common.active')}</span>
                 <span className="text-slate-700">20%</span>
               </div>
               <div className="flex items-center gap-1.5 justify-between">
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-500" />Pending</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-500" />{t('common.pending')}</span>
                 <span className="text-slate-700">10%</span>
               </div>
             </div>
@@ -457,9 +459,9 @@ export const DashboardPage: React.FC = () => {
         {/* Recent Cases list */}
         <div className="bg-white rounded-card border border-border-light p-5 shadow-sm flex flex-col justify-between min-h-[240px]">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[14px] font-bold text-heading-dark">Recent Cases</span>
+            <span className="text-[14px] font-bold text-heading-dark">{t('dashboard.recent_cases')}</span>
             <button className="text-[11px] font-bold text-primary-blue hover:underline cursor-pointer flex items-center gap-0.5">
-              <span>View All</span>
+              <span>{t('common.view_all')}</span>
               <ExternalLink className="w-3 h-3" />
             </button>
           </div>
@@ -476,7 +478,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${c.statusColor} flex-shrink-0`}>
-                  {c.status}
+                  {t(c.status)}
                 </span>
               </div>
             ))}
@@ -488,17 +490,17 @@ export const DashboardPage: React.FC = () => {
       <div className="bg-white border border-border-light rounded-card p-6 shadow-sm">
         <h2 className="text-[15px] font-bold text-heading-dark mb-4 flex items-center gap-1.5">
           <Sliders className="w-4 h-4 text-primary-blue" />
-          <span>Quick Investigation Commands</span>
+          <span>{t('dashboard.quick_investigation_commands')}</span>
         </h2>
         
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           {[
-            { label: 'Ask AI Assistant', action: () => navigate('/chat'), color: 'bg-primary-blue hover:bg-blue-600 text-white shadow-blue-500/10' },
-            { label: 'Advanced Search', action: () => navigate('/chat'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
-            { label: 'Network Analysis', action: () => navigate('/network'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
-            { label: 'Geospatial Map', action: () => console.log('Geospatial Map - coming soon'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
-            { label: 'Generate Report', action: () => console.log('Generate Report - coming soon'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
-            { label: 'Upload Data', action: () => console.log('Upload Data - coming soon'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
+            { label: t('dashboard.ask_ai_assistant'), action: () => navigate('/chat'), color: 'bg-primary-blue hover:bg-blue-600 text-white shadow-blue-500/10' },
+            { label: t('dashboard.advanced_search'), action: () => navigate('/chat'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
+            { label: t('dashboard.network_analysis_btn'), action: () => navigate('/network'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
+            { label: t('dashboard.geospatial_map'), action: () => console.log('Geospatial Map - coming soon'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
+            { label: t('dashboard.generate_report'), action: () => console.log('Generate Report - coming soon'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
+            { label: t('dashboard.upload_data'), action: () => console.log('Upload Data - coming soon'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
           ].map((act, idx) => (
             <button
               key={idx}

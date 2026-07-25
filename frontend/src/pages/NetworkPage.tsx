@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Share2,
   GitBranch,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 
 export const NetworkPage: React.FC = () => {
+  const { t } = useTranslation();
   const [suspectA, setSuspectA] = useState('Raju (Gangleader)');
   const [suspectB, setSuspectB] = useState('Kumar (Accomplice)');
 
@@ -42,12 +44,12 @@ export const NetworkPage: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="w-2 h-5 bg-purple-accent rounded-full" />
-              <h2 className="text-[18px] font-bold text-heading-dark">Criminal Network Discovery</h2>
+              <h2 className="text-[18px] font-bold text-heading-dark">{t('network.criminal_network_discovery')}</h2>
             </div>
             
             <div className="flex items-center gap-2 text-[12px] font-bold text-slate-400">
               <Activity className="w-4 h-4 text-green-500 animate-pulse" />
-              <span>Neo4j Graph Database Connected</span>
+              <span>{t('network.neo4j_connected')}</span>
             </div>
           </div>
 
@@ -136,9 +138,9 @@ export const NetworkPage: React.FC = () => {
 
             {/* Quick stats floating tag */}
             <div className="absolute bottom-4 left-4 bg-slate-950/80 backdrop-blur-md border border-slate-800 rounded-btn p-3 text-[11px] font-semibold text-slate-300">
-              <span className="block font-bold text-white mb-1">Graph Statistics</span>
-              <span className="block text-slate-400">• Total Nodes Indexed: 14,892</span>
-              <span className="block text-slate-400">• Association links: 86,432</span>
+              <span className="block font-bold text-white mb-1">{t('network.graph_statistics')}</span>
+              <span className="block text-slate-400">• {t('network.total_nodes_indexed')}: 14,892</span>
+              <span className="block text-slate-400">• {t('network.association_links')}: 86,432</span>
             </div>
           </div>
         </div>
@@ -149,13 +151,13 @@ export const NetworkPage: React.FC = () => {
           <div className="bg-white rounded-card border border-border-light p-6 shadow-sm space-y-5">
             <h3 className="text-[15px] font-bold text-heading-dark flex items-center gap-1.5 border-b border-slate-100 pb-3">
               <GitBranch className="w-4.5 h-4.5 text-primary-blue" />
-              <span>Link Analysis Panel</span>
+              <span>{t('network.link_analysis_panel')}</span>
             </h3>
 
             {/* Suspect inputs */}
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <span className="text-[12px] text-gray-text font-bold uppercase tracking-wider">Node A (Suspect / Case)</span>
+                <span className="text-[12px] text-gray-text font-bold uppercase tracking-wider">{t('network.node_a')}</span>
                 <div className="relative flex items-center">
                   <input
                     type="text"
@@ -168,7 +170,7 @@ export const NetworkPage: React.FC = () => {
               </div>
 
               <div className="space-y-1.5">
-                <span className="text-[12px] text-gray-text font-bold uppercase tracking-wider">Node B (Target)</span>
+                <span className="text-[12px] text-gray-text font-bold uppercase tracking-wider">{t('network.node_b')}</span>
                 <div className="relative flex items-center">
                   <input
                     type="text"
@@ -183,7 +185,7 @@ export const NetworkPage: React.FC = () => {
 
             <button onClick={() => console.log('Finding connection pathways:', suspectA, '→', suspectB)} className="w-full h-11 bg-primary-blue hover:bg-blue-600 text-white rounded-btn text-[13px] font-bold shadow-md shadow-blue-500/10 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-102">
               <Share2 className="w-4 h-4" />
-              <span>Find Connection Pathways</span>
+              <span>{t('network.find_connection_pathways')}</span>
             </button>
           </div>
 
@@ -191,7 +193,7 @@ export const NetworkPage: React.FC = () => {
           <div className="bg-white rounded-card border border-border-light p-6 shadow-sm space-y-4">
             <h3 className="text-[15px] font-bold text-heading-dark border-b border-slate-100 pb-3 flex items-center gap-1.5">
               <Users2 className="w-4.5 h-4.5 text-primary-blue" />
-              <span>Discovered Relations</span>
+              <span>{t('network.discovered_relations')}</span>
             </h3>
 
             <div className="space-y-3">

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Search, Mic, Bell, HelpCircle, LogOut } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useLanguageStore } from '../stores/useLanguageStore';
 
 export const Header: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -10,9 +11,11 @@ export const Header: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const { language, setLanguage } = useLanguageStore();
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
+    setLanguage(lng);
   };
 
   const handleLogout = () => {
@@ -77,7 +80,7 @@ export const Header: React.FC = () => {
           <button
             onClick={() => changeLanguage('en')}
             className={`px-3 py-1 rounded-[8px] text-[12px] font-bold transition-all cursor-pointer ${
-              i18n.language?.startsWith('en')
+              language?.startsWith('en')
                 ? 'bg-white text-primary-blue shadow-sm'
                 : 'text-gray-text hover:text-heading-dark'
             }`}
@@ -87,7 +90,7 @@ export const Header: React.FC = () => {
           <button
             onClick={() => changeLanguage('kn')}
             className={`px-3 py-1 rounded-[8px] text-[12px] font-bold transition-all cursor-pointer ${
-              i18n.language?.startsWith('kn')
+              language?.startsWith('kn')
                 ? 'bg-white text-primary-blue shadow-sm'
                 : 'text-gray-text hover:text-heading-dark'
             }`}
@@ -101,6 +104,7 @@ export const Header: React.FC = () => {
             <Bell className="w-5 h-5" strokeWidth={2} />
             <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-danger-red ring-2 ring-white" />
           </button>
+
           <button onClick={() => console.log('Help - not yet implemented')} className="w-10 h-10 rounded-btn hover:bg-bg-light flex items-center justify-center text-slate-500 hover:text-heading-dark transition-colors cursor-pointer">
             <HelpCircle className="w-5 h-5" strokeWidth={2} />
           </button>

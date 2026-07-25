@@ -1,0 +1,111 @@
+from __future__ import annotations
+
+import asyncio
+import json
+import logging
+
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from langchain_core.messages import AIMessage, HumanMessage
+
+from app.agent import create_agent
+from app.agent.streaming import stream_agent_response
+from app.config import settings
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter()
+
+# Instantiate the agent graph and session manager once
+graph, session_manager = create_agent()
+
+
+@router.websocket("/ws")
+async def chat_websocket(websocket: WebSocket) -> None:
+    """
+    WebSocket endpoint for real-time bidirectional chat streaming.
+    Receives JSON messages: {"message": "prompt", "session_id": "session-id"}
+    Sends JSON events: {"event": "message"|"tool_call"|"tool_result"|"done"|"error", "data": {...}}
+    """
+    await websocket.accept()
+    logger.info("WebSocket connection established")
+
+    try:
+        while True:
+            # Read message from the client
+            data = await websocket.receive_text()
+            try:
+                payload = json.loads(data)
+            except json.JSONDecodeError:
+                await websocket.send_json(
+                    {"event": "error", "data": {"error": "Invalid JSON format"}}
+                )
+                continue
+
+            user_msg = payload.get("message")
+            session_id = payload.get("session_id", "default-session")
+
+            if not user_msg:
+                await websocket.send_json({"event": "error", "data": {"error": "Empty message"}})
+                continue
+
+            # Load or initialize chat state/history from Redis
+            state = await session_manager.load_session(session_id)
+            if state is None:
+                state = {
+                    "messages": [],
+                    "session_id": session_id,
+                    "context": {},
+                    "iteration_count": 0,
+                }
+
+            # Append the new user message to history
+            state["messages"].append(HumanMessage(content=user_msg))
+            state["iteration_count"] = 0
+
+            config = {"configurable": {"thread_id": session_id}}
+
+            # Check if LLM_API_KEY is provided
+            if not settings.LLM_API_KEY:
+                logger.warning("LLM_API_KEY is empty. Running in mock streaming fallback mode.")
+
+                # Custom mock agent streaming
+                mock_text = (
+                    f"Intelligence response regarding investigation query: '{user_msg}'.\n\n"
+                    "Data Analysed: Under IPC sections, Koramangala crime incidence shows a "
+                    "downward trend, whereas robbery incidents in Whitefield are high. "
+                    "Recommended action: deploy additional night patrols "
+                    "and verify repeat offenders."
+                )
+
+                # Stream words one by one to simulate an active LLM agent
+                words = mock_text.split(" ")
+                for word in words:
+                    await asyncio.sleep(0.05)
+                    await websocket.send_json({"event": "message", "data": {"content": word + " "}})
+
+                await websocket.send_json({"event": "done", "data": {}})
+
+                # Persist the mock reply to history
+                state["messages"].append(AIMessage(content=mock_text))
+                await session_manager.save_session(session_id, state)
+            else:
+                agent_message_content = ""
+                try:
+                    async for event in stream_agent_response(graph, state, config):
+                        await websocket.send_json({"event": event.event, "data": event.data})
+                        if event.event == "message":
+                            agent_message_content += event.data.get("content", "")
+
+                    if agent_message_content:
+                        state["messages"].append(AIMessage(content=agent_message_content))
+                        await session_manager.save_session(session_id, state)
+                except Exception as exc:
+                    logger.error("Error during agent flow: %s", exc, exc_info=True)
+                    await websocket.send_json(
+                        {"event": "error", "data": {"error": f"Agent execution error: {str(exc)}"}}
+                    )
+
+    except WebSocketDisconnect:
+        logger.info("WebSocket connection disconnected by client")
+    except Exception as err:
+        logger.error("Unexpected WebSocket handler error: %s", err, exc_info=True)

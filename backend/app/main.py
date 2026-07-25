@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.audit import router as audit_router
 from app.api.auth import router as auth_router
 from app.api.graph import router as graph_router
+from app.api.translation import router as translation_router
 from app.config import settings
 
 app = FastAPI(
@@ -23,6 +24,7 @@ app.add_middleware(
 app.include_router(audit_router)
 app.include_router(auth_router)
 app.include_router(graph_router)
+app.include_router(translation_router, prefix="/api")
 
 
 @app.get("/health")
