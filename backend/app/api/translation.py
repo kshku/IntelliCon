@@ -50,15 +50,19 @@ async def translate_batch(requests: list[TranslationRequest]):
                 target=req.target_lang,
             )
             translated = translator.translate(req.text)
-            results.append(TranslationResponse(
-                translated_text=translated,
-                source_lang=req.source_lang,
-                target_lang=req.target_lang,
-            ))
+            results.append(
+                TranslationResponse(
+                    translated_text=translated,
+                    source_lang=req.source_lang,
+                    target_lang=req.target_lang,
+                )
+            )
         except Exception:
-            results.append(TranslationResponse(
-                translated_text=req.text,
-                source_lang=req.source_lang,
-                target_lang=req.target_lang,
-            ))
+            results.append(
+                TranslationResponse(
+                    translated_text=req.text,
+                    source_lang=req.source_lang,
+                    target_lang=req.target_lang,
+                )
+            )
     return results
