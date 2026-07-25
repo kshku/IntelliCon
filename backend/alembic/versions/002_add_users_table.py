@@ -57,7 +57,7 @@ def upgrade() -> None:
             {
                 "employee_id": 1,
                 "username": "admin",
-                "password_hash": pwd_context.hash("admin123"),
+                "password_hash": pwd_context.hash("admin"),
                 "role": "admin",
             },
             {
