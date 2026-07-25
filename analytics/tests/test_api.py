@@ -48,3 +48,12 @@ def test_list_executions():
 def test_get_execution_not_found():
     response = client.get("/executions/999999")
     assert response.status_code == 404
+
+
+def test_trigger_job():
+    response = client.post("/jobs/hotspot_detection/trigger")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "triggered"
+    assert data["job_name"] == "hotspot_detection"
+    assert "message" in data
