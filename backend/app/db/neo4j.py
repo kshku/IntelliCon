@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -50,3 +51,11 @@ def run_write(cypher: str, parameters: dict | None = None) -> list[dict]:
     with get_session() as session:
         result = session.execute_write(lambda tx: tx.run(cypher, parameters or {}).data())
         return result
+
+
+async def async_run_query(cypher: str, parameters: dict | None = None) -> list[dict]:
+    return await asyncio.to_thread(run_query, cypher, parameters)
+
+
+async def async_run_write(cypher: str, parameters: dict | None = None) -> list[dict]:
+    return await asyncio.to_thread(run_write, cypher, parameters)
