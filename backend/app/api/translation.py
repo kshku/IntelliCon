@@ -1,6 +1,6 @@
+from deep_translator import GoogleTranslator
 from fastapi import APIRouter
 from pydantic import BaseModel
-from deep_translator import GoogleTranslator
 
 router = APIRouter()
 
@@ -31,7 +31,7 @@ async def translate_text(request: TranslationRequest):
             source_lang=request.source_lang,
             target_lang=request.target_lang,
         )
-    except Exception as e:
+    except Exception:
         return TranslationResponse(
             translated_text=request.text,
             source_lang=request.source_lang,
