@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Literal
 
 from langchain_core.language_models import BaseChatModel
@@ -11,7 +12,7 @@ from app.agent.state import AgentState
 from app.tools.base import ToolRegistry
 
 
-def _agent_node(llm: BaseChatModel) -> callable:
+def _agent_node(llm: BaseChatModel) -> Callable:
     async def agent(state: AgentState) -> dict:
         response = await llm.bind_tools(state.get("tools", [])).ainvoke(state["messages"])
         return {
