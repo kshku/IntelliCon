@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Sparkles, Terminal, Activity, Wifi, WifiOff, ChevronDown, ChevronRight, Brain } from 'lucide-react';
+import { Send, Sparkles, Terminal, Activity, Wifi, WifiOff, Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronRight, Brain } from 'lucide-react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useChatStore } from '../stores/useChatStore';
+import { useVoiceRecognition } from '../hooks/useVoiceRecognition';
+import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
+import { useLanguageStore } from '../stores/useLanguageStore';
 
 export const ChatPage: React.FC = () => {
   const { t } = useTranslation();
@@ -20,6 +23,34 @@ export const ChatPage: React.FC = () => {
       return next;
     });
   };
+
+  const { language } = useLanguageStore();
+  const voiceLang = language === 'kn' ? 'kn-IN' : 'en-US';
+
+  const {
+    isListening,
+    interimTranscript,
+    startListening,
+    stopListening,
+    isSupported: sttSupported,
+  } = useVoiceRecognition({
+    lang: voiceLang,
+    continuous: false,
+    interimResults: true,
+    onResult: (text) => {
+      setInput(text);
+      if (text.trim()) {
+        sendMessage(text);
+      }
+    },
+  });
+
+  const {
+    speak,
+    stop: stopSpeaking,
+    isSpeaking,
+    isSupported: ttsSupported,
+  } = useSpeechSynthesis({ lang: voiceLang });
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,8 +84,39 @@ export const ChatPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Connection status badge */}
+        {/* Connection status + Voice controls */}
         <div className="flex items-center gap-2">
+          {sttSupported && (
+            <button
+              onClick={isListening ? stopListening : startListening}
+              className={`w-9 h-9 rounded-btn flex items-center justify-center transition-all cursor-pointer ${
+                isListening
+                  ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse'
+                  : 'bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100'
+              }`}
+              title={isListening ? t('chat.stop_listening') : t('chat.voice_mode')}
+            >
+              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </button>
+          )}
+
+          {ttsSupported && (
+            <button
+              onClick={isSpeaking ? stopSpeaking : () => {
+                const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant' && m.content);
+                if (lastAssistant) speak(lastAssistant.content);
+              }}
+              className={`w-9 h-9 rounded-btn flex items-center justify-center transition-all cursor-pointer ${
+                isSpeaking
+                  ? 'bg-blue-50 text-blue-600 border border-blue-200'
+                  : 'bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100'
+              }`}
+              title={isSpeaking ? t('chat.stop_speaking') : t('chat.speak_response')}
+            >
+              {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+          )}
+
           {isConnected ? (
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 text-[12px] font-bold">
               <Wifi className="w-3.5 h-3.5" />
@@ -152,6 +214,23 @@ export const ChatPage: React.FC = () => {
                     </div>
                   )}
 
+                  {/* TTS button on assistant messages */}
+                  {msg.role === 'assistant' && msg.content && ttsSupported && (
+                    <button
+                      onClick={() => {
+                        if (isSpeaking) {
+                          stopSpeaking();
+                        } else {
+                          speak(msg.content);
+                        }
+                      }}
+                      className="w-7 h-7 rounded-btn flex items-center justify-center text-slate-400 hover:text-primary-blue hover:bg-blue-50 transition-all cursor-pointer"
+                      title={isSpeaking ? t('chat.stop_speaking') : t('chat.speak_response')}
+                    >
+                      {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                    </button>
+                  )}
+
                   {/* Tool execution audit trace */}
                   {msg.toolCalls && msg.toolCalls.length > 0 && (
                     <div className="rounded-btn border border-slate-100 bg-slate-100/50 p-3 space-y-2 max-w-full overflow-hidden">
@@ -205,13 +284,23 @@ export const ChatPage: React.FC = () => {
       </div>
 
       {/* Input panel at bottom */}
-      <form onSubmit={handleSend} className="p-4 border-t border-border-light bg-white flex gap-3">
+      <form onSubmit={handleSend} className="relative p-4 border-t border-border-light bg-white flex gap-3">
+        {isListening && (
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-4 py-2 bg-red-50 border border-red-200 rounded-full text-[12px] font-bold text-red-600 flex items-center gap-2 animate-pulse">
+            <Mic className="w-3.5 h-3.5" />
+            {t('chat.listening')}
+            {interimTranscript && (
+              <span className="text-red-400 ml-1 max-w-[200px] truncate">{interimTranscript}</span>
+            )}
+          </div>
+        )}
+
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          disabled={isStreaming}
-          placeholder={t('common.ask_placeholder')}
+          disabled={isStreaming || isListening}
+          placeholder={isListening ? t('chat.listening') : t('common.ask_placeholder')}
           className="flex-1 h-12 px-5 rounded-btn bg-bg-light border border-border-light text-[14px] text-heading-dark placeholder-slate-400 focus:outline-none focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/10 transition-all font-medium disabled:opacity-60"
         />
         <button
