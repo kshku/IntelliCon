@@ -72,3 +72,23 @@ class PredictionResult(Base):
     confidence_upper = Column(Float, nullable=True)
     prediction_period = Column(String(20), nullable=True)
     computed_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+
+
+class AnalyticsPrediction(Base):
+    __tablename__ = "analytics_predictions"
+    __table_args__ = (
+        Index("idx_analytics_predictions_type", "prediction_type"),
+        Index("idx_analytics_predictions_entity", "entity_type", "entity_id"),
+        Index("idx_analytics_predictions_period", "period_date"),
+        {"schema": "analytics"},
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    prediction_type = Column(String(50), nullable=False)
+    entity_type = Column(String(50), nullable=False)
+    entity_id = Column(Integer, nullable=True)
+    prediction_value = Column(Float, nullable=True)
+    confidence = Column(Float, nullable=True)
+    period_date = Column(TIMESTAMP, nullable=True)
+    model_version = Column(String(50), nullable=True)
+    computed_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
