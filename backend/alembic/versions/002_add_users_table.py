@@ -43,12 +43,15 @@ def upgrade() -> None:
     op.create_index("ix_users_username", "users", ["username"])
     op.create_index("ix_users_employee_id", "users", ["employee_id"])
 
-    # Seed default users
     import os
+    import bcrypt
 
     admin_pw = os.getenv("SEED_ADMIN_PASSWORD", "admin123")
     inv_pw = os.getenv("SEED_INVESTIGATOR_PASSWORD", "inv123")
     sup_pw = os.getenv("SEED_SUPERVISOR_PASSWORD", "sup123")
+
+    def _hash(pw: str) -> str:
+        return bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     users_table = sa.table(
         "users",
@@ -63,19 +66,19 @@ def upgrade() -> None:
             {
                 "employee_id": 1,
                 "username": "admin",
-                "password_hash": pwd_context.hash(admin_pw),
+                "password_hash": _hash(admin_pw),
                 "role": "admin",
             },
             {
                 "employee_id": 2,
                 "username": "investigator",
-                "password_hash": pwd_context.hash(inv_pw),
+                "password_hash": _hash(inv_pw),
                 "role": "investigator",
             },
             {
                 "employee_id": 3,
                 "username": "supervisor",
-                "password_hash": pwd_context.hash(sup_pw),
+                "password_hash": _hash(sup_pw),
                 "role": "supervisor",
             },
         ],
