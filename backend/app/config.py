@@ -2,6 +2,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    # Environment
+    ENVIRONMENT: str = "development"
+
     # LLM Provider
     LLM_PROVIDER: str = "openai"
     LLM_MODEL: str = "gpt-4o"
