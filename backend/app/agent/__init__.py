@@ -29,8 +29,11 @@ def create_agent(
     llm: BaseChatModel | None = None,
     registry: ToolRegistry | None = None,
     max_iterations: int | None = None,
+    provider: str | None = None,
+    model: str | None = None,
+    api_key: str | None = None,
 ) -> tuple[CompiledStateGraph, SessionManager]:
-    _llm = llm or get_llm()
+    _llm = llm or get_llm(provider=provider, model=model, api_key=api_key)
     _registry = registry or tool_registry
     _max_iter = max_iterations or settings.AGENT_MAX_ITERATIONS
 

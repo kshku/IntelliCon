@@ -52,6 +52,9 @@ async def chat_websocket(
 
             user_msg = payload.get("message")
             session_id = payload.get("session_id", "default-session")
+            llm_provider = payload.get("llm_provider")
+            llm_model = payload.get("llm_model")
+            api_key = payload.get("api_key")
 
             if not user_msg:
                 await websocket.send_json({"event": "error", "data": {"error": "Empty message"}})
@@ -73,9 +76,10 @@ async def chat_websocket(
 
             config = {"configurable": {"thread_id": session_id}}
 
-            # Check if LLM_API_KEY is provided
-            if not settings.LLM_API_KEY:
-                logger.warning("LLM_API_KEY is empty. Running in mock streaming fallback mode.")
+            # Check if LLM API key is provided (either from frontend override or backend settings)
+            active_api_key = api_key or settings.LLM_API_KEY
+            if not active_api_key:
+                logger.warning("No LLM API key provided. Running in mock streaming fallback mode.")
 
                 # Custom mock agent streaming
                 mock_text = (
@@ -99,8 +103,30 @@ async def chat_websocket(
                 await session_manager.save_session(session_id, state)
             else:
                 agent_message_content = ""
+                from app.agent.llm_factory import (
+                    active_llm_api_key,
+                    active_llm_model,
+                    active_llm_provider,
+                )
+                active_provider = llm_provider or settings.LLM_PROVIDER
+                active_model = llm_model or settings.LLM_MODEL
+
+                token_provider = active_llm_provider.set(active_provider)
+                token_model = active_llm_model.set(active_model)
+                token_api_key = active_llm_api_key.set(active_api_key)
+
                 try:
-                    async for event in stream_agent_response(graph, state, config):  # type: ignore[arg-type]
+                    current_graph, _ = create_agent(
+                        provider=active_provider,
+                        model=active_model,
+                        api_key=active_api_key,
+                    )
+                    async for event in stream_agent_response(
+                        current_graph,
+                        state,  # type: ignore[arg-type]
+                        config,
+                        session_id=session_id,
+                    ):
                         await websocket.send_json({"event": event.event, "data": event.data})
                         if event.event == "message":
                             agent_message_content += event.data.get("content", "")
@@ -111,8 +137,12 @@ async def chat_websocket(
                 except Exception as exc:
                     logger.error("Error during agent flow: %s", exc, exc_info=True)
                     await websocket.send_json(
-                        {"event": "error", "data": {"error": "Agent execution failed"}}
+                        {"event": "error", "data": {"error": f"Agent execution failed: {exc}"}}
                     )
+                finally:
+                    active_llm_provider.reset(token_provider)
+                    active_llm_model.reset(token_model)
+                    active_llm_api_key.reset(token_api_key)
 
     except WebSocketDisconnect:
         logger.info("WebSocket connection disconnected by client")

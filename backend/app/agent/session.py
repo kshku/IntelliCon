@@ -55,6 +55,8 @@ def _deserialize_messages(data: list[dict[str, Any]]) -> list:
 
 
 class SessionManager:
+    _fallback_store: dict[str, str] = {}
+
     def __init__(self, redis_url: str) -> None:
         self._redis = aioredis.from_url(redis_url, decode_responses=True)
 
@@ -66,12 +68,23 @@ class SessionManager:
             "iteration_count": state.get("iteration_count", 0),
         }
         key = f"session:{session_id}"
-        await self._redis.setex(key, SESSION_TTL_SECONDS, json.dumps(data, default=str))
-        logger.info("Session saved: %s", session_id)
+        serialized_data = json.dumps(data, default=str)
+        try:
+            await self._redis.setex(key, SESSION_TTL_SECONDS, serialized_data)
+            logger.info("Session saved to Redis: %s", session_id)
+        except Exception as e:
+            logger.warning("Redis is not available, falling back to in-memory store. Error: %s", e)
+            self._fallback_store[key] = serialized_data
 
     async def load_session(self, session_id: str) -> AgentState | None:
         key = f"session:{session_id}"
-        raw = await self._redis.get(key)
+        raw = None
+        try:
+            raw = await self._redis.get(key)
+        except Exception as e:
+            logger.warning("Redis is not available, loading from in-memory store. Error: %s", e)
+            raw = self._fallback_store.get(key)
+
         if raw is None:
             return None
         data = json.loads(raw)
@@ -84,8 +97,15 @@ class SessionManager:
 
     async def delete_session(self, session_id: str) -> None:
         key = f"session:{session_id}"
-        await self._redis.delete(key)
-        logger.info("Session deleted: %s", session_id)
+        try:
+            await self._redis.delete(key)
+            logger.info("Session deleted from Redis: %s", session_id)
+        except Exception as e:
+            logger.warning("Redis is not available for deletion. Error: %s", e)
+            self._fallback_store.pop(key, None)
 
     async def close(self) -> None:
-        await self._redis.aclose()
+        try:
+            await self._redis.aclose()
+        except Exception:
+            pass

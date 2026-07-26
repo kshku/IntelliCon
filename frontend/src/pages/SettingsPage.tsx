@@ -12,6 +12,31 @@ import {
   Lock
 } from 'lucide-react';
 
+const PROVIDER_MODELS: Record<string, { value: string; label: string }[]> = {
+  openai: [
+    { value: 'gpt-4o', label: 'gpt-4o' },
+    { value: 'gpt-4o-mini', label: 'gpt-4o-mini' },
+    { value: 'gpt-4-turbo', label: 'gpt-4-turbo' },
+  ],
+  anthropic: [
+    { value: 'claude-3-5-sonnet', label: 'claude-3-5-sonnet' },
+    { value: 'claude-3-opus', label: 'claude-3-opus' },
+    { value: 'claude-3-5-haiku', label: 'claude-3-5-haiku' },
+  ],
+  gemini: [
+    { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro' },
+    { value: 'gemini-1.5-flash', label: 'gemini-1.5-flash' },
+    { value: 'gemini-2.0-flash', label: 'gemini-2.0-flash' },
+    { value: 'gemini-pro', label: 'gemini-pro' },
+  ],
+  groq: [
+    { value: 'llama-3.3-70b-versatile', label: 'llama-3.3-70b-versatile' },
+    { value: 'llama-3.1-8b-instant', label: 'llama-3.1-8b-instant' },
+    { value: 'mixtral-8x7b-32768', label: 'mixtral-8x7b-32768' },
+    { value: 'gemma2-9b-it', label: 'gemma2-9b-it' },
+  ],
+};
+
 export const SettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const [llmProvider, setLlmProvider] = useState(() => localStorage.getItem('intellicon_llm_provider') || 'openai');
@@ -19,6 +44,15 @@ export const SettingsPage: React.FC = () => {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('intellicon_api_key') || '');
   const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem('intellicon_theme') as 'light' | 'dark') || 'light');
   const [saved, setSaved] = useState(false);
+
+  const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const provider = e.target.value;
+    setLlmProvider(provider);
+    const models = PROVIDER_MODELS[provider] || [];
+    if (models.length > 0) {
+      setLlmModel(models[0].value);
+    }
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,12 +103,13 @@ export const SettingsPage: React.FC = () => {
                 <span className="text-[12px] text-gray-text font-bold uppercase tracking-wider">{t('settings.llm_provider')}</span>
                 <select
                   value={llmProvider}
-                  onChange={(e) => setLlmProvider(e.target.value)}
+                  onChange={handleProviderChange}
                   className="w-full h-11 px-4 bg-bg-light border border-border-light rounded-btn text-[13px] text-heading-dark font-semibold focus:outline-none focus:border-primary-blue cursor-pointer"
                 >
                   <option value="openai">{t('settings.openai_recommended')}</option>
                   <option value="anthropic">{t('settings.anthropic')}</option>
                   <option value="gemini">{t('settings.gemini')}</option>
+                  <option value="groq">Groq</option>
                 </select>
               </div>
 
@@ -85,9 +120,11 @@ export const SettingsPage: React.FC = () => {
                   onChange={(e) => setLlmModel(e.target.value)}
                   className="w-full h-11 px-4 bg-bg-light border border-border-light rounded-btn text-[13px] text-heading-dark font-semibold focus:outline-none focus:border-primary-blue cursor-pointer"
                 >
-                  <option value="gpt-4o">gpt-4o</option>
-                  <option value="claude-3-5-sonnet">claude-3-5-sonnet</option>
-                  <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                  {(PROVIDER_MODELS[llmProvider] || []).map((model) => (
+                    <option key={model.value} value={model.value}>
+                      {model.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 

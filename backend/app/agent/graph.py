@@ -1,7 +1,5 @@
-from __future__ import annotations
-
-from collections.abc import Callable
-from typing import Literal
+from collections.abc import Callable, Sequence
+from typing import Any, Literal
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage
@@ -12,9 +10,17 @@ from app.agent.state import AgentState
 from app.tools.base import ToolRegistry
 
 
-def _agent_node(llm: BaseChatModel) -> Callable:
+def _agent_node(llm: BaseChatModel, tools: Sequence[Any] | None = None) -> Callable:
     async def agent(state: AgentState) -> dict:
-        response = await llm.bind_tools(state.get("tools", [])).ainvoke(state["messages"])  # type: ignore[arg-type]
+        from langchain_core.messages import SystemMessage
+
+        from app.agent.system_prompt import get_system_prompt
+
+        system_prompt = get_system_prompt()
+        messages = [SystemMessage(content=system_prompt)] + list(state["messages"])
+
+        _tools = tools if tools is not None else state.get("tools", [])
+        response = await llm.bind_tools(_tools).ainvoke(messages)  # type: ignore[arg-type]
         return {
             "messages": [response],
             "iteration_count": state.get("iteration_count", 0) + 1,
@@ -41,7 +47,7 @@ def build_agent_graph(
     tool_node = ToolNode(tools)
 
     graph = StateGraph(AgentState)
-    graph.add_node("agent", _agent_node(llm))
+    graph.add_node("agent", _agent_node(llm, tools))
     graph.add_node("tools", tool_node)
     graph.set_entry_point("agent")
 

@@ -6,12 +6,16 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 const MAX_RECONNECT_INTERVAL = 30000;
 
 const getWsUrl = () => {
+  const token = localStorage.getItem('token') || '';
   const loc = window.location;
+  let baseUrl = '';
   if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') {
-    return 'ws://localhost:8000/api/chat/ws';
+    baseUrl = 'ws://localhost:8000/api/chat/ws';
+  } else {
+    const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+    baseUrl = `${proto}//${loc.host}/api/chat/ws`;
   }
-  const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${proto}//${loc.host}/api/chat/ws`;
+  return token ? `${baseUrl}?token=${encodeURIComponent(token)}` : baseUrl;
 };
 
 export const useWebSocket = () => {
@@ -150,10 +154,17 @@ export const useWebSocket = () => {
 
     setStreaming(true);
 
+    const storedProvider = localStorage.getItem('intellicon_llm_provider') || 'openai';
+    const storedModel = localStorage.getItem('intellicon_llm_model') || 'gpt-4o';
+    const storedApiKey = localStorage.getItem('intellicon_api_key') || '';
+
     // Send payload to backend
     socketRef.current.send(JSON.stringify({
       message: text,
       session_id: sessionId,
+      llm_provider: storedProvider,
+      llm_model: storedModel,
+      api_key: storedApiKey,
     }));
   }, [sessionId, addMessage, setStreaming, connect]);
 

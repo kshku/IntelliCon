@@ -31,23 +31,53 @@ async def stream_agent_response(
     step_counter = 0
     step_start: float | None = None
 
+    # Buffers for active chat model runs to separate intermediate thinking from final answer
+    run_buffers: dict[str, list[str]] = {}
+
     try:
         async for event in graph.astream_events(initial_state, config or {}, version="v2"):  # type: ignore[arg-type,call-overload]
             kind = event.get("event", "")
-            if kind == "on_chat_model_stream":
+            metadata = event.get("metadata", {})
+
+            # Filter out sub-LLM calls (e.g. SQL generator) made inside tools
+            if kind.startswith("on_chat_model_"):
+                if metadata.get("langgraph_node") != "agent":
+                    continue
+
+            if kind == "on_chat_model_start":
+                run_id = event.get("run_id")
+                if run_id:
+                    run_buffers[run_id] = []
+            elif kind == "on_chat_model_stream":
+                run_id = event.get("run_id")
                 chunk = event.get("data", {}).get("chunk")
                 if isinstance(chunk, AIMessage) and chunk.content:
                     content = chunk.content
-                    yield SSEEvent(event="message", data={"content": content})
-                    step_counter += 1
-                    await log_audit_step(
-                        session_id=session_id,
-                        user_id=user_id,
-                        step_number=step_counter,
-                        step_type="reasoning",
-                        content=content if isinstance(content, str) else str(content),
-                    )
-                    yield SSEEvent(event="reasoning", data={"content": content})
+                    if isinstance(content, str) and run_id:
+                        run_buffers.setdefault(run_id, []).append(content)
+            elif kind == "on_chat_model_end":
+                run_id = event.get("run_id")
+                output = event.get("data", {}).get("output")
+                if isinstance(output, AIMessage) and run_id:
+                    has_tool_calls = bool(output.tool_calls)
+                    buffered_text = "".join(run_buffers.get(run_id, []))
+
+                    if has_tool_calls:
+                        if buffered_text:
+                            step_counter += 1
+                            await log_audit_step(
+                                session_id=session_id,
+                                user_id=user_id,
+                                step_number=step_counter,
+                                step_type="reasoning",
+                                content=buffered_text,
+                            )
+                            yield SSEEvent(event="reasoning", data={"content": buffered_text})
+                    else:
+                        if buffered_text:
+                            yield SSEEvent(event="message", data={"content": buffered_text})
+
+                    run_buffers.pop(run_id, None)
             elif kind == "on_tool_start":
                 step_start = time.monotonic()
                 tool_name = event.get("name", "")
