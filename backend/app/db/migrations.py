@@ -3,11 +3,11 @@
 import logging
 import time
 
-from alembic import command
 from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
+from alembic import command
 from app.config import settings
 
 logger = logging.getLogger(__name__)
