@@ -41,6 +41,12 @@ services:
 
   frontend:
     volumes: []
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
 
   caddy:
     environment:
