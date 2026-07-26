@@ -42,17 +42,13 @@ def test_neighbors_missing_name(tool):
 
 
 def test_shortest_path_missing_names(tool):
-    result = asyncio.run(
-        tool.execute(query_type="shortest_path", name_a="Alice")
-    )
+    result = asyncio.run(tool.execute(query_type="shortest_path", name_a="Alice"))
     assert not result.success
     assert "Both name_a and name_b" in result.error
 
 
 def test_shared_cases_missing_names(tool):
-    result = asyncio.run(
-        tool.execute(query_type="shared_cases", name_a="Alice")
-    )
+    result = asyncio.run(tool.execute(query_type="shared_cases", name_a="Alice"))
     assert not result.success
     assert "Both name_a and name_b" in result.error
 
@@ -62,9 +58,7 @@ def test_neighbors_1hop_empty_results(tool):
         return []
 
     with patch("app.db.neo4j.async_run_query", mock_run):
-        result = asyncio.run(
-            tool.execute(query_type="neighbors_1hop", name_a="Ravi")
-        )
+        result = asyncio.run(tool.execute(query_type="neighbors_1hop", name_a="Ravi"))
     assert result.success
     assert "No results found" in result.data
     assert result.metadata["row_count"] == 0
@@ -93,9 +87,7 @@ def test_neighbors_1hop_with_results(tool):
         ]
 
     with patch("app.db.neo4j.async_run_query", mock_run):
-        result = asyncio.run(
-            tool.execute(query_type="neighbors_1hop", name_a="Ravi")
-        )
+        result = asyncio.run(tool.execute(query_type="neighbors_1hop", name_a="Ravi"))
     assert result.success
     assert "Ravi" in result.data
     assert "Suresh" in result.data
@@ -130,9 +122,7 @@ def test_shortest_path_not_found(tool):
         return []
 
     with patch("app.db.neo4j.async_run_query", mock_run):
-        result = asyncio.run(
-            tool.execute(query_type="shortest_path", name_a="Alice", name_b="Bob")
-        )
+        result = asyncio.run(tool.execute(query_type="shortest_path", name_a="Alice", name_b="Bob"))
     assert result.success
     assert "No results found" in result.data
 
@@ -146,9 +136,7 @@ def test_degree_centrality(tool):
         ]
 
     with patch("app.db.neo4j.async_run_query", mock_run):
-        result = asyncio.run(
-            tool.execute(query_type="degree_centrality", district="Mangaluru")
-        )
+        result = asyncio.run(tool.execute(query_type="degree_centrality", district="Mangaluru"))
     assert result.success
     assert "Ravi" in result.data
     assert "12 connections" in result.data
@@ -200,9 +188,7 @@ def test_network_2hop(tool):
         ]
 
     with patch("app.db.neo4j.async_run_query", mock_run):
-        result = asyncio.run(
-            tool.execute(query_type="network_2hop", name_a="Ravi")
-        )
+        result = asyncio.run(tool.execute(query_type="network_2hop", name_a="Ravi"))
     assert result.success
     assert "Ravi" in result.data
     assert "1 paths found" in result.data
@@ -214,9 +200,7 @@ def test_timeout_error(tool):
         return []
 
     with patch("app.db.neo4j.async_run_query", slow_run):
-        result = asyncio.run(
-            tool.execute(query_type="neighbors_1hop", name_a="Ravi")
-        )
+        result = asyncio.run(tool.execute(query_type="neighbors_1hop", name_a="Ravi"))
     assert not result.success
     assert "timed out" in result.error
 

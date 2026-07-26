@@ -95,9 +95,7 @@ def test_session_empty_messages(tool):
     mock_manager.close = AsyncMock()
 
     with patch("app.agent.session.SessionManager", return_value=mock_manager):
-        result = asyncio.run(
-            tool.execute(session_id="empty-session")
-        )
+        result = asyncio.run(tool.execute(session_id="empty-session"))
     assert not result.success
     assert "no messages" in result.error
 
@@ -202,9 +200,7 @@ def test_execute_full_flow(tool, sample_messages):
     mock_manager.close = AsyncMock()
 
     with patch("app.agent.session.SessionManager", return_value=mock_manager):
-        result = asyncio.run(
-            tool.execute(session_id="full-flow", title="Test Report")
-        )
+        result = asyncio.run(tool.execute(session_id="full-flow", title="Test Report"))
 
     assert result.success
     assert "PDF exported successfully" in result.data
