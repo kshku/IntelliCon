@@ -7,7 +7,11 @@
 
 set -euo pipefail
 
-# Ensure REDIS_PASSWORD is set so the base compose file's ${REDIS_PASSWORD:?} doesn't fail.
+# Ensure required variables are set so the base compose file's ${VAR:?} assertions don't fail.
+# Docker Compose interpolates each file's variables before merging overrides,
+# so these must be in the shell environment even though the test overlay sets them.
+export POSTGRES_PASSWORD=testpass
+export NEO4J_PASSWORD=testpass
 export REDIS_PASSWORD=testpass
 
 COMPOSE_FILES="-f docker-compose.yml -f docker-compose.test.yml"
