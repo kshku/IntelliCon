@@ -103,9 +103,15 @@ async def chat_websocket(
                 await session_manager.save_session(session_id, state)
             else:
                 agent_message_content = ""
+                from app.agent.llm_factory import active_llm_provider, active_llm_model, active_llm_api_key
+                active_provider = llm_provider or settings.LLM_PROVIDER
+                active_model = llm_model or settings.LLM_MODEL
+                
+                token_provider = active_llm_provider.set(active_provider)
+                token_model = active_llm_model.set(active_model)
+                token_api_key = active_llm_api_key.set(active_api_key)
+                
                 try:
-                    active_provider = llm_provider or settings.LLM_PROVIDER
-                    active_model = llm_model or settings.LLM_MODEL
                     current_graph, _ = create_agent(
                         provider=active_provider,
                         model=active_model,
@@ -127,8 +133,12 @@ async def chat_websocket(
                 except Exception as exc:
                     logger.error("Error during agent flow: %s", exc, exc_info=True)
                     await websocket.send_json(
-                        {"event": "error", "data": {"error": "Agent execution failed"}}
+                        {"event": "error", "data": {"error": f"Agent execution failed: {exc}"}}
                     )
+                finally:
+                    active_llm_provider.reset(token_provider)
+                    active_llm_model.reset(token_model)
+                    active_llm_api_key.reset(token_api_key)
 
     except WebSocketDisconnect:
         logger.info("WebSocket connection disconnected by client")
