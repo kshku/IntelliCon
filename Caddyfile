@@ -14,9 +14,6 @@
     # exclusive and matched in declaration order.
     handle /api/chat/ws {
         reverse_proxy backend:8000 {
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-            header_up X-Forwarded-Host {host}
             transport http {
                 read_timeout 86400s
             }
@@ -33,19 +30,11 @@
             }
         }
 
-        reverse_proxy backend:8000 {
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-            header_up X-Forwarded-Host {host}
-        }
+        reverse_proxy backend:8000
     }
 
     # Everything else → frontend
     handle {
-        reverse_proxy frontend:3000 {
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-            header_up X-Forwarded-Host {host}
-        }
+        reverse_proxy frontend:3000
     }
 }
