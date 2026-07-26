@@ -71,3 +71,117 @@
     background: #94A3B8;
   }
 }
+
+/* Dark Mode Color Overrides */
+.dark {
+  --color-white: #0f172a; /* Slate 900 background for cards and headers */
+  --color-bg-light: #020617; /* Slate 950 main body background */
+  --color-border-light: #1e293b; /* Slate 800 borders */
+  --color-hover-light: #1e293b; /* Hover background */
+  --color-heading-dark: #f8fafc; /* Slate 50 text for headings */
+  --color-gray-text: #94a3b8; /* Slate 400 text for secondary text */
+
+  /* Override hardcoded tailwind slate variables to dark mode colors */
+  --color-slate-50: #1e293b;
+  --color-slate-100: #334155;
+  --color-slate-200: #475569;
+  --color-slate-300: #64748b;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #cbd5e1;
+  --color-slate-600: #e2e8f0;
+  --color-slate-700: #f1f5f9;
+  --color-slate-800: #f8fafc;
+  --color-slate-900: #ffffff;
+
+  /* Premium semi-transparent dark-mode badge colors */
+  --color-purple-100: rgba(167, 139, 250, 0.15);
+  --color-purple-700: #c084fc;
+  --color-amber-100: rgba(251, 191, 36, 0.15);
+  --color-amber-700: #fbbf24;
+  --color-blue-100: rgba(96, 165, 250, 0.15);
+  --color-blue-700: #60a5fa;
+  --color-green-100: rgba(74, 222, 128, 0.15);
+  --color-green-700: #4ade80;
+  --color-red-100: rgba(248, 113, 113, 0.15);
+  --color-red-700: #f87171;
+}
+
+/* Premium Dark Mode Scrollbars */
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Leaflet Dark Mode Popup Styling */
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid #1e293b;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+.dark .leaflet-popup-content {
+  color: #f8fafc !important;
+}
+
+/* Custom pulsing map marker styling class */
+.custom-leaflet-marker {
+  background: transparent;
+  border: none;
+}
+
+/* Print Overrides for Clean PDF Reports */
+@media print {
+  /* Reset height/overflow layout limits to prevent clipping */
+  html, body, #root, 
+  div[class*="h-screen"], 
+  div[class*="h-full"], 
+  main,
+  .flex,
+  .flex-col {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide sidebar, header, quick action panels, and map controls */
+  header,
+  aside,
+  .no-print,
+  .quick-actions-row,
+  .leaflet-control-zoom,
+  .leaflet-control-attribution,
+  div[class*="w-[240px]"] {
+    display: none !important;
+  }
+
+  main {
+    padding: 20px !important;
+    margin: 0 !important;
+  }
+
+  /* Ensure card backgrounds print nicely */
+  .rounded-card {
+    border: 1px solid #cbd5e1 !important;
+    background: white !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Sizing for trend chart and map containers in prints */
+  div[class*="min-h-[260px]"],
+  div[class*="min-h-[220px]"] {
+    min-height: 400px !important;
+    height: 400px !important;
+    page-break-inside: avoid !important;
+  }
+}

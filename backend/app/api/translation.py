@@ -1,6 +1,9 @@
 from deep_translator import GoogleTranslator
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+
+from app.auth import get_current_user
+from app.models.user import User
 
 router = APIRouter()
 
@@ -18,7 +21,10 @@ class TranslationResponse(BaseModel):
 
 
 @router.post("/translate", response_model=TranslationResponse)
-async def translate_text(request: TranslationRequest):
+async def translate_text(
+    request: TranslationRequest,
+    _user: User = Depends(get_current_user),
+):
     """Translate text between Kannada and English for LLM processing."""
     try:
         translator = GoogleTranslator(
@@ -31,16 +37,18 @@ async def translate_text(request: TranslationRequest):
             source_lang=request.source_lang,
             target_lang=request.target_lang,
         )
-    except Exception:
-        return TranslationResponse(
-            translated_text=request.text,
-            source_lang=request.source_lang,
-            target_lang=request.target_lang,
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Translation service unavailable: {type(exc).__name__}",
         )
 
 
 @router.post("/translate/batch", response_model=list[TranslationResponse])
-async def translate_batch(requests: list[TranslationRequest]):
+async def translate_batch(
+    requests: list[TranslationRequest],
+    _user: User = Depends(get_current_user),
+):
     """Translate multiple texts in batch."""
     results = []
     for req in requests:
@@ -57,12 +65,9 @@ async def translate_batch(requests: list[TranslationRequest]):
                     target_lang=req.target_lang,
                 )
             )
-        except Exception:
-            results.append(
-                TranslationResponse(
-                    translated_text=req.text,
-                    source_lang=req.source_lang,
-                    target_lang=req.target_lang,
-                )
+        except Exception as exc:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Translation service unavailable: {type(exc).__name__}",
             )
     return results

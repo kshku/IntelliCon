@@ -19,7 +19,12 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+    ]
 
     # Agent
     AGENT_MAX_ITERATIONS: int = 10
@@ -30,6 +35,16 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "change-me-in-production"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_MINUTES: int = 60
+
+    # Connection Pool
+    DB_POOL_SIZE: int = 10
+    DB_MAX_OVERFLOW: int = 20
+    DB_POOL_RECYCLE: int = 1800
+
+    # Initial User Seed Passwords (configurable via environment/dotenv)
+    SEED_ADMIN_PASSWORD: str = "admin123"
+    SEED_INVESTIGATOR_PASSWORD: str = "inv123"
+    SEED_SUPERVISOR_PASSWORD: str = "sup123"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

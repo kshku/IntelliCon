@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Sparkles, Terminal, Activity, Wifi, WifiOff, Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronRight, Brain } from 'lucide-react';
+import { Send, Sparkles, Terminal, Activity, Wifi, WifiOff, Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronRight, Brain, Plus, Trash2, Edit3, MessageSquare, Check, X } from 'lucide-react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useChatStore } from '../stores/useChatStore';
 import { useVoiceRecognition } from '../hooks/useVoiceRecognition';
@@ -10,10 +10,28 @@ import { useLanguageStore } from '../stores/useLanguageStore';
 export const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const { isConnected, sendMessage } = useWebSocket();
-  const { messages, isStreaming } = useChatStore();
+  const {
+    messages,
+    isStreaming,
+    conversations,
+    activeSessionId,
+    createNewChat,
+    switchChat,
+    deleteChat,
+    renameChat,
+  } = useChatStore();
   const [input, setInput] = useState('');
   const [expandedReasoning, setExpandedReasoning] = useState<Set<string>>(new Set());
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const handleRename = (id: string) => {
+    if (editTitle.trim()) {
+      renameChat(id, editTitle.trim());
+    }
+    setEditingSessionId(null);
+  };
 
   const toggleReasoning = (msgId: string) => {
     setExpandedReasoning((prev) => {
@@ -71,9 +89,114 @@ export const ChatPage: React.FC = () => {
   ];
 
   return (
-    <div className="h-[calc(100vh-154px)] flex flex-col font-sans max-w-[1000px] mx-auto bg-white rounded-card border border-border-light shadow-sm overflow-hidden">
-      {/* Header bar of Chat Workspace */}
-      <div className="px-6 py-4 border-b border-border-light flex items-center justify-between bg-white z-10">
+    <div className="h-[calc(100vh-154px)] flex font-sans max-w-[1200px] mx-auto bg-white rounded-card border border-border-light shadow-sm overflow-hidden">
+      {/* Left Chat Sessions Sidebar */}
+      <div className="w-64 bg-slate-50 border-r border-border-light flex flex-col h-full flex-shrink-0">
+        {/* New Chat Button */}
+        <div className="p-4 border-b border-border-light">
+          <button
+            type="button"
+            onClick={createNewChat}
+            className="w-full h-10 rounded-btn border border-primary-blue/30 text-primary-blue bg-white hover:bg-blue-50 font-bold text-[13px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm hover:shadow"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Chat</span>
+          </button>
+        </div>
+
+        {/* Conversation List */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-1">
+          {conversations.map((conv) => {
+            const isActive = conv.id === activeSessionId;
+            const isEditing = conv.id === editingSessionId;
+
+            return (
+              <div
+                key={conv.id}
+                onClick={() => !isEditing && switchChat(conv.id)}
+                className={`group flex items-center justify-between p-2.5 rounded-btn text-[13px] font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-blue-50/70 text-primary-blue border border-blue-100/70'
+                    : 'text-heading-dark hover:bg-slate-100 border border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-2 truncate flex-1 pr-2" onClick={(e) => isEditing && e.stopPropagation()}>
+                  <MessageSquare className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-primary-blue' : 'text-slate-400'}`} />
+                  
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleRename(conv.id);
+                        if (e.key === 'Escape') setEditingSessionId(null);
+                      }}
+                      className="w-full bg-white border border-primary-blue/50 rounded px-1.5 py-0.5 text-[12px] font-semibold focus:outline-none"
+                      autoFocus
+                    />
+                  ) : (
+                    <span className="truncate">{conv.title}</span>
+                  )}
+                </div>
+
+                {/* Actions: Edit / Delete */}
+                {!isEditing && (
+                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingSessionId(conv.id);
+                        setEditTitle(conv.title);
+                      }}
+                      className="p-1 rounded text-slate-400 hover:text-primary-blue hover:bg-slate-200 transition-colors"
+                      title="Rename Chat"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteChat(conv.id);
+                      }}
+                      className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-slate-200 transition-colors"
+                      title="Delete Chat"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {isEditing && (
+                  <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => handleRename(conv.id)}
+                      className="p-1 text-green-600 hover:bg-slate-200 rounded"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingSessionId(null)}
+                      className="p-1 text-red-600 hover:bg-slate-200 rounded"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Right Chat Container Area */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        {/* Header bar of Chat Workspace */}
+        <div className="px-6 py-4 border-b border-border-light flex items-center justify-between bg-white z-10">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-btn bg-blue-50 flex items-center justify-center text-primary-blue">
             <Sparkles className="w-5 h-5" />
@@ -312,5 +435,6 @@ export const ChatPage: React.FC = () => {
         </button>
       </form>
     </div>
+  </div>
   );
 };

@@ -390,6 +390,8 @@ def _random_date(year: int, month: int, day: int, offset: int) -> str:
 
 def seed_cases(session: Session, ref: dict, count: int = 120) -> None:
     """Generate `count` realistic FIR cases with related records."""
+    used_case_nos = set()
+    used_crime_nos = set()
     for _ in range(count):
         year = random.choice([2022, 2023, 2024, 2025])
         month = random.randint(1, 12)
@@ -399,9 +401,18 @@ def seed_cases(session: Session, ref: dict, count: int = 120) -> None:
         lat = KARNATAKA_COORDS[0] + random.uniform(-2, 2)
         lng = KARNATAKA_COORDS[1] + random.uniform(-2, 2)
 
-        crime_no = f"0{year % 100}/{random.randint(10000, 99999)}"
-        letter = random.choice(["A", "B", "C", "D"])
-        case_no = f"PS/{letter}/{year}/{random.randint(100, 999)}"
+        while True:
+            crime_no = f"0{year % 100}/{random.randint(10000, 99999)}"
+            if crime_no not in used_crime_nos:
+                used_crime_nos.add(crime_no)
+                break
+
+        while True:
+            letter = random.choice(["A", "B", "C", "D"])
+            case_no = f"PS/{letter}/{year}/{random.randint(1000, 9999)}"
+            if case_no not in used_case_nos:
+                used_case_nos.add(case_no)
+                break
 
         gravity = random.choice(ref["grav_ids"])
         status = random.choice(ref["status_ids"])
@@ -538,6 +549,37 @@ def main() -> None:
 
         print("Seeding cases...")
         seed_cases(session, ref, count=120)
+
+        # Seed default users
+        from app.auth import hash_password
+        from app.models.user import User
+
+        existing_users = session.execute(text("SELECT COUNT(*) FROM users")).scalar()
+        if not existing_users:
+            print("Seeding default users...")
+            default_users = [
+                User(
+                    employee_id=1,
+                    username="admin",
+                    password_hash=hash_password(settings.SEED_ADMIN_PASSWORD),
+                    role="admin",
+                ),
+                User(
+                    employee_id=2,
+                    username="investigator",
+                    password_hash=hash_password(settings.SEED_INVESTIGATOR_PASSWORD),
+                    role="investigator",
+                ),
+                User(
+                    employee_id=3,
+                    username="supervisor",
+                    password_hash=hash_password(settings.SEED_SUPERVISOR_PASSWORD),
+                    role="supervisor",
+                ),
+            ]
+            session.add_all(default_users)
+            session.commit()
+            print("Seeded default users successfully")
 
 
 if __name__ == "__main__":

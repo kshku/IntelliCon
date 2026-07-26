@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Integer, String, Text
+from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -53,7 +53,9 @@ class CrimeSubHead(Base):
 
     crime_sub_head_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     sub_head_name: Mapped[str] = mapped_column(String(200), nullable=False)
-    crime_head_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    crime_head_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("crime_head.crime_head_id"), nullable=False
+    )
 
     crime_head: Mapped[CrimeHead] = relationship(back_populates="sub_heads")
 
@@ -74,7 +76,7 @@ class Section(Base):
     section_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     section_number: Mapped[str] = mapped_column(String(50), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    act_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    act_id: Mapped[int] = mapped_column(Integer, ForeignKey("act.act_id"), nullable=False)
 
     act: Mapped[Act] = relationship(back_populates="sections")
 
@@ -83,9 +85,13 @@ class CrimeHeadActSection(Base):
     __tablename__ = "crime_head_act_section"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    crime_head_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    act_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    section_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    crime_head_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("crime_head.crime_head_id"), nullable=False
+    )
+    act_id: Mapped[int] = mapped_column(Integer, ForeignKey("act.act_id"), nullable=False)
+    section_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("section.section_id"), nullable=False
+    )
 
     crime_head: Mapped[CrimeHead] = relationship(back_populates="act_sections")
     act: Mapped[Act] = relationship(back_populates="crime_head_sections")
