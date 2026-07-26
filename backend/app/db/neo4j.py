@@ -49,7 +49,9 @@ def run_query(cypher: str, parameters: dict | None = None) -> list[dict]:
 
 def run_write(cypher: str, parameters: dict | None = None) -> list[dict]:
     with get_session() as session:
-        result = session.execute_write(lambda tx: tx.run(cypher, parameters or {}).data())
+        result: list[dict] = session.execute_write(
+            lambda tx: tx.run(cypher, parameters or {}).data()
+        )
         return result
 
 

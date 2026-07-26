@@ -14,7 +14,7 @@ from app.tools.base import ToolRegistry
 
 def _agent_node(llm: BaseChatModel) -> Callable:
     async def agent(state: AgentState) -> dict:
-        response = await llm.bind_tools(state.get("tools", [])).ainvoke(state["messages"])
+        response = await llm.bind_tools(state.get("tools", [])).ainvoke(state["messages"])  # type: ignore[arg-type]
         return {
             "messages": [response],
             "iteration_count": state.get("iteration_count", 0) + 1,
@@ -27,9 +27,9 @@ def _should_continue(state: AgentState, max_iterations: int) -> Literal["tools",
     last_message = state["messages"][-1]
     if isinstance(last_message, AIMessage) and last_message.tool_calls:
         if state.get("iteration_count", 0) >= max_iterations:
-            return END
+            return END  # type: ignore[return-value]
         return "tools"
-    return END
+    return END  # type: ignore[return-value]
 
 
 def build_agent_graph(

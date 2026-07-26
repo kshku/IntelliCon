@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import numpy as np
@@ -15,8 +15,15 @@ from app.registry import register_job
 logger = logging.getLogger(__name__)
 
 HEINOUS_CRIME_KEYWORDS = [
-    "murder", "homicide", "rape", "kidnap", "robbery",
-    "dacoity", "extortion", "arson", "acid attack",
+    "murder",
+    "homicide",
+    "rape",
+    "kidnap",
+    "robbery",
+    "dacoity",
+    "extortion",
+    "arson",
+    "acid attack",
 ]
 
 LOOKBACK_DAYS = 30
@@ -26,11 +33,14 @@ DBSCAN_MIN_SAMPLES = 3
 
 def _haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     """Great-circle distance between two points in km."""
-    R = 6371.0
+    radius_km = 6371.0
     dlat = np.radians(lat2 - lat1)
     dlng = np.radians(lng2 - lng1)
-    a = np.sin(dlat / 2) ** 2 + np.cos(np.radians(lat1)) * np.cos(np.radians(lat2)) * np.sin(dlng / 2) ** 2
-    return R * 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+    a = (
+        np.sin(dlat / 2) ** 2
+        + np.cos(np.radians(lat1)) * np.cos(np.radians(lat2)) * np.sin(dlng / 2) ** 2
+    )
+    return radius_km * 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
 
 
 def _classify_severity(crime_type: str | None) -> str:
@@ -44,7 +54,7 @@ def _classify_severity(crime_type: str | None) -> str:
 
 
 def _fetch_cases(session: Session, lookback_days: int) -> list[dict]:
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
+    cutoff = (datetime.now(UTC) - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
     rows = session.execute(
         text(
             "SELECT cm.case_id, cm.latitude, cm.longitude, "
@@ -78,7 +88,12 @@ def _cluster_cases(cases: list[dict]) -> dict[int, list[dict]]:
     coords = np.array([[c["latitude"], c["longitude"]] for c in cases])
 
     eps_rad = DBSCAN_EPS_KM / 6371.0
-    db = DBSCAN(eps=eps_rad, min_samples=DBSCAN_MIN_SAMPLES, metric="haversine", algorithm="ball_tree")
+    db = DBSCAN(
+        eps=eps_rad,
+        min_samples=DBSCAN_MIN_SAMPLES,
+        metric="haversine",
+        algorithm="ball_tree",
+    )
     labels = db.fit_predict(coords)
 
     clusters: dict[int, list[dict]] = {}
@@ -103,6 +118,7 @@ def _compute_radius_km(cluster_cases: list[dict]) -> float:
 
 def _dominant_crime_type(cluster_cases: list[dict]) -> str:
     from collections import Counter
+
     types = [c["crime_type"] for c in cluster_cases if c["crime_type"]]
     if not types:
         return "unknown"
@@ -133,7 +149,7 @@ class HotspotDetectionPipeline:
         clusters = _cluster_cases(cases)
         logger.info("DBSCAN found %d clusters", len(clusters))
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         period_start = now - timedelta(days=LOOKBACK_DAYS)
         stored = 0
 

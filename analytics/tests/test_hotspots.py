@@ -2,12 +2,12 @@ from unittest.mock import MagicMock, patch
 
 from app.pipelines.hotspots import (
     HotspotDetectionPipeline,
-    _haversine_km,
     _classify_severity,
     _cluster_cases,
     _compute_radius_km,
     _dominant_crime_type,
     _fetch_cases,
+    _haversine_km,
 )
 
 
@@ -48,19 +48,56 @@ def test_cluster_cases_empty():
 
 
 def test_cluster_cases_single_point():
-    cases = [{"case_id": 1, "latitude": 12.97, "longitude": 77.59,
-              "crime_type": "Theft", "crime_registered_date": "2026-07-01"}]
+    cases = [
+        {
+            "case_id": 1,
+            "latitude": 12.97,
+            "longitude": 77.59,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        }
+    ]
     clusters = _cluster_cases(cases)
     assert len(clusters) == 0
 
 
 def test_cluster_cases_dense_cluster():
     cases = [
-        {"case_id": 1, "latitude": 12.9700, "longitude": 77.5900, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
-        {"case_id": 2, "latitude": 12.9701, "longitude": 77.5901, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
-        {"case_id": 3, "latitude": 12.9702, "longitude": 77.5902, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
-        {"case_id": 4, "latitude": 12.9703, "longitude": 77.5903, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
-        {"case_id": 5, "latitude": 12.9704, "longitude": 77.5904, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
+        {
+            "case_id": 1,
+            "latitude": 12.9700,
+            "longitude": 77.5900,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 2,
+            "latitude": 12.9701,
+            "longitude": 77.5901,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 3,
+            "latitude": 12.9702,
+            "longitude": 77.5902,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 4,
+            "latitude": 12.9703,
+            "longitude": 77.5903,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 5,
+            "latitude": 12.9704,
+            "longitude": 77.5904,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
     ]
     clusters = _cluster_cases(cases)
     assert len(clusters) >= 1
@@ -70,12 +107,48 @@ def test_cluster_cases_dense_cluster():
 
 def test_cluster_cases_two_separate_groups():
     cases = [
-        {"case_id": 1, "latitude": 12.97, "longitude": 77.59, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
-        {"case_id": 2, "latitude": 12.9701, "longitude": 77.5901, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
-        {"case_id": 3, "latitude": 12.9702, "longitude": 77.5902, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
-        {"case_id": 4, "latitude": 13.50, "longitude": 78.50, "crime_type": "Fraud", "crime_registered_date": "2026-07-01"},
-        {"case_id": 5, "latitude": 13.5001, "longitude": 78.5001, "crime_type": "Fraud", "crime_registered_date": "2026-07-01"},
-        {"case_id": 6, "latitude": 13.5002, "longitude": 78.5002, "crime_type": "Fraud", "crime_registered_date": "2026-07-01"},
+        {
+            "case_id": 1,
+            "latitude": 12.97,
+            "longitude": 77.59,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 2,
+            "latitude": 12.9701,
+            "longitude": 77.5901,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 3,
+            "latitude": 12.9702,
+            "longitude": 77.5902,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 4,
+            "latitude": 13.50,
+            "longitude": 78.50,
+            "crime_type": "Fraud",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 5,
+            "latitude": 13.5001,
+            "longitude": 78.5001,
+            "crime_type": "Fraud",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 6,
+            "latitude": 13.5002,
+            "longitude": 78.5002,
+            "crime_type": "Fraud",
+            "crime_registered_date": "2026-07-01",
+        },
     ]
     clusters = _cluster_cases(cases)
     assert len(clusters) >= 2
@@ -144,11 +217,41 @@ def test_pipeline_run_no_cases():
 
 def test_pipeline_run_with_clusters():
     cases = [
-        {"case_id": 1, "latitude": 12.9700, "longitude": 77.5900, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
-        {"case_id": 2, "latitude": 12.9701, "longitude": 77.5901, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
-        {"case_id": 3, "latitude": 12.9702, "longitude": 77.5902, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
-        {"case_id": 4, "latitude": 12.9703, "longitude": 77.5903, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
-        {"case_id": 5, "latitude": 12.9704, "longitude": 77.5904, "crime_type": "Theft", "crime_registered_date": "2026-07-01"},
+        {
+            "case_id": 1,
+            "latitude": 12.9700,
+            "longitude": 77.5900,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 2,
+            "latitude": 12.9701,
+            "longitude": 77.5901,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 3,
+            "latitude": 12.9702,
+            "longitude": 77.5902,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 4,
+            "latitude": 12.9703,
+            "longitude": 77.5903,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
+        {
+            "case_id": 5,
+            "latitude": 12.9704,
+            "longitude": 77.5904,
+            "crime_type": "Theft",
+            "crime_registered_date": "2026-07-01",
+        },
     ]
     session = MagicMock()
     with patch("app.pipelines.hotspots._fetch_cases", return_value=cases):
