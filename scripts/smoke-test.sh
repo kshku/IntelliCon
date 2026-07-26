@@ -19,9 +19,10 @@ export REDIS_PASSWORD=testpass
 touch .env
 
 COMPOSE_FILES="-f docker-compose.yml -f docker-compose.test.yml"
-TIMEOUT="${SMOKE_TEST_TIMEOUT:-120}"
+TIMEOUT="${SMOKE_TEST_TIMEOUT:-180}"
 BACKEND_URL="http://localhost:8000"
 ANALYTICS_URL="http://localhost:8001"
+CADDY_URL="http://localhost:80"
 
 # --- Cleanup trap ---
 cleanup() {
@@ -51,12 +52,13 @@ while true; do
     exit 1
   fi
 
-  # Check if all services are healthy
+  # Check if all services with healthchecks are healthy.
+  # Services without a healthcheck report Health="" and are skipped.
   UNHEALTHY=$(docker compose $COMPOSE_FILES ps --format json 2>/dev/null \
     | python3 -c "
 import sys, json
 services = [json.loads(line) for line in sys.stdin if line.strip()]
-unhealthy = [s['Service'] for s in services if s.get('Health', '') != 'healthy']
+unhealthy = [s['Service'] for s in services if s.get('Health') and s['Health'] != 'healthy']
 print('\n'.join(unhealthy))
 " 2>/dev/null || echo "")
 
@@ -101,6 +103,13 @@ data = json.load(sys.stdin)
 assert data['status'] == 'healthy', f\"Expected status 'healthy', got '{data['status']}'\"
 print(f\"  Analytics: status={data['status']}\")
 "
+
+echo "==> Probing frontend via Caddy..."
+curl -sf "$CADDY_URL/" >/dev/null 2>&1 || {
+  echo "FAIL: Frontend unreachable via Caddy."
+  exit 1
+}
+echo "  Frontend: reachable via Caddy"
 
 # --- Step 6: Auth workflow ---
 echo "==> Testing auth workflow (login + /me)..."

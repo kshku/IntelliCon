@@ -42,7 +42,20 @@ services:
   frontend:
     volumes: []
 
+  caddy:
+    environment:
+      - DOMAIN=localhost
+    volumes: []
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:80/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   analytics:
+    ports:
+      - "8001:8001"
     env_file: []
     environment:
       DATABASE_URL: postgresql://intellicon:testpass@postgres:5432/intellicon
