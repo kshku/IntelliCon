@@ -1,0 +1,79 @@
+FROM ubuntu:22.04 AS base
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# ─── Install system dependencies ───
+RUN apt-get update && apt-get install -y \
+    supervisor curl wget gnupg2 ca-certificates lsb-release \
+    python3.11 python3.11-venv python3-pip \
+    nodejs npm \
+    redis-server \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Install PostgreSQL 16 ───
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+    > /etc/apt/sources.list.d/pgdg.list \
+    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+    && apt-get update \
+    && apt-get install -y postgresql-16 \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Install Neo4j 5 Community ───
+RUN curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key \
+    | gpg --dearmor -o /usr/share/keyrings/neo4j.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/neo4j.gpg] https://debian.neo4j.com stable 5" \
+    > /etc/apt/sources.list.d/neo4j.list \
+    && apt-get update \
+    && apt-get install -y neo4j=1:5.26.0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Install Caddy ───
+RUN apt-get update \
+    && apt-get install -y debian-keyring debian-archive-keyring apt-transport-https \
+    && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+    | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg \
+    && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+    > /etc/apt/sources.list.d/caddy-stable.list \
+    && apt-get update \
+    && apt-get install -y caddy \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Python deps (backend + analytics combined) ───
+WORKDIR /app
+
+COPY backend/requirements.txt /tmp/backend-requirements.txt
+COPY analytics/requirements.txt /tmp/analytics-requirements.txt
+
+RUN pip3 install --no-cache-dir -r /tmp/backend-requirements.txt \
+    && pip3 install --no-cache-dir -r /tmp/analytics-requirements.txt
+
+# ─── Copy all application code ───
+COPY backend/ /app/backend/
+COPY analytics/ /app/analytics/
+COPY frontend/ /tmp/frontend-build/
+
+# ─── Build frontend ───
+WORKDIR /tmp/frontend-build
+RUN npm ci && npm run build
+
+# ─── Copy built frontend to nginx-serving location ───
+RUN mkdir -p /app/frontend/dist \
+    && cp -r /app/../frontend-build/dist/* /app/frontend/dist/
+
+# ─── Copy config files ───
+COPY catalyst/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY Caddyfile /etc/caddy/Caddyfile
+COPY catalyst/nginx-frontend.conf /etc/nginx/conf.d/default.conf
+COPY catalyst/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# ─── Create required directories ───
+RUN mkdir -p /var/lib/postgresql/data /var/log/supervisor \
+    /var/lib/neo4j/data /var/lib/neo4j/logs /var/log/nginx \
+    /var/run/redis /var/log/redis /var/log/postgresql
+
+# ─── Expose Catalyst port (overridden by X_ZOHO_CATALYST_LISTEN_PORT) ───
+EXPOSE 9000
+
+ENTRYPOINT ["/entrypoint.sh"]

@@ -2,6 +2,7 @@
 .env.local
 .env.production
 .env.staging
+.env.catalyst
 __pycache__/
 *.py[cod]
 *$py.class
