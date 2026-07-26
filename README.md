@@ -191,30 +191,62 @@ See `data/Police_FIR_ER_Diagram.pdf` for the complete ER diagram with all column
 ## Getting Started
 
 ### Prerequisites
-- Docker & Docker Compose
+- Docker Engine with the Docker Compose plugin (`docker compose version`)
 - Git
 
-### Setup
+### Run with Docker Compose
+
+Docker Compose starts the frontend, backend, analytics service, PostgreSQL,
+Neo4j, and Redis. PostgreSQL, Neo4j, and Redis data are stored in named Docker
+volumes, so they persist when the stack is stopped.
 
 ```bash
 # Clone the repository
 git clone git@github.com:kshku/IntelliCon.git
 cd IntelliCon
 
-# Copy environment config
+# Create your local environment configuration
 cp .env.example .env
 
-# Edit .env with your LLM API key and settings
+# Set a strong JWT secret and the API key for the selected LLM provider.
+# Do not use the placeholder values from .env.example in a real environment.
 nano .env
 
-# Start all services
-docker compose up
+# Build the application images and start the full stack in the background
+docker compose up --build -d
 
-# Access:
-# - Frontend: http://localhost:3000
-# - Backend API: http://localhost:8000
-# - Neo4j Browser: http://localhost:7474
+# Confirm that the services are running
+docker compose ps
+
+# Apply the backend database migrations (run after the first startup and after upgrades)
+docker compose exec backend alembic upgrade head
+
+# Optional: load the development sample data and default users
+docker compose exec backend python -m app.db.seed
 ```
+
+The first build can take a few minutes while Docker downloads base images and
+installs dependencies. Once the services are ready, open:
+
+- Frontend: <http://localhost:3000>
+- Backend health check: <http://localhost:8000/health>
+- Neo4j Browser: <http://localhost:7474>
+
+To follow startup logs or stop the stack:
+
+```bash
+# Follow logs from all services, or replace with a service name (for example, backend)
+docker compose logs -f
+
+# Stop containers while keeping database data
+docker compose down
+
+# Stop containers and permanently remove the named data volumes
+docker compose down -v
+```
+
+`docker compose down -v` deletes the local PostgreSQL, Neo4j, and Redis data.
+Use it only when a clean local environment is intended.
 
 ### Configuration
 
@@ -246,7 +278,3 @@ npm run dev
 cd analytics
 python scheduler.py
 ```
-
-## License
-
-Private — Karnataka State Police Department
