@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from langchain_core.messages import AIMessage
-from langgraph.graph import StateGraph
+from langgraph.graph.state import CompiledStateGraph
 
 
 @dataclass
@@ -20,7 +20,7 @@ class SSEEvent:
 
 
 async def stream_agent_response(
-    graph: StateGraph,
+    graph: CompiledStateGraph,
     initial_state: dict[str, Any],
     config: dict[str, Any] | None = None,
     session_id: str | None = None,
@@ -28,12 +28,11 @@ async def stream_agent_response(
 ) -> AsyncGenerator[SSEEvent, None]:
     from app.audit import log_audit_step
 
-    compiled = graph.compile()
     step_counter = 0
     step_start: float | None = None
 
     try:
-        async for event in compiled.astream_events(initial_state, config or {}, version="v2"):
+        async for event in graph.astream_events(initial_state, config or {}, version="v2"):
             kind = event.get("event", "")
             if kind == "on_chat_model_stream":
                 chunk = event.get("data", {}).get("chunk")
