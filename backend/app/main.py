@@ -1,3 +1,7 @@
+import logging
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,10 +15,33 @@ from app.api.pdf import router as pdf_router
 from app.api.translation import router as translation_router
 from app.config import settings
 
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+    from app.db.neo4j import close_driver
+    from app.db.session import engine
+
+    if settings.JWT_SECRET_KEY == "change-me-in-production":
+        logger.critical(
+            "JWT_SECRET_KEY is set to the default placeholder. "
+            "Set a strong random value via the JWT_SECRET_KEY env var."
+        )
+        raise RuntimeError("JWT_SECRET_KEY must be changed from default")
+
+    logger.info("Starting IntelliCon backend...")
+    yield
+    logger.info("Shutting down IntelliCon backend...")
+    await engine.dispose()
+    close_driver()
+
+
 app = FastAPI(
     title="IntelliCon API",
     description="Conversational AI platform for Karnataka State Police Crime Database",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -37,4 +64,18 @@ app.include_router(cases_router)
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "intellicon-backend"}
+    from sqlalchemy import text
+
+    from app.db.session import engine
+
+    health = {"status": "healthy", "service": "intellicon-backend", "checks": {}}
+
+    try:
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        health["checks"]["database"] = "ok"
+    except Exception:
+        health["checks"]["database"] = "error"
+        health["status"] = "degraded"
+
+    return health

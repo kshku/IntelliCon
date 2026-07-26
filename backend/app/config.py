@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_MINUTES: int = 60
 
+    # Connection Pool
+    DB_POOL_SIZE: int = 10
+    DB_MAX_OVERFLOW: int = 20
+    DB_POOL_RECYCLE: int = 1800
+
     # Initial User Seed Passwords (configurable via environment/dotenv)
     SEED_ADMIN_PASSWORD: str = "admin123"
     SEED_INVESTIGATOR_PASSWORD: str = "inv123"
