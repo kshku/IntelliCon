@@ -1,0 +1,34 @@
+{
+  "$schema": "https://catalyst.zoho.com/schemas/catalyst.json",
+  "version": "1.0",
+  "project": {
+    "project_name": "intellicon",
+    "project_description": "AI-powered conversational platform for Karnataka State Police Crime Database"
+  },
+  "appsail": [
+    {
+      "app_name": "intellicon",
+      "runtime_type": "custom_runtime",
+      "docker": {
+        "image": "intellicon/catalyst:latest"
+      },
+      "port": 9000,
+      "memory": 2048,
+      "disk": 5120,
+      "env_variables": {
+        "ENVIRONMENT": "production",
+        "POSTGRES_DB": "intellicon",
+        "POSTGRES_USER": "intellicon",
+        "POSTGRES_PASSWORD": "CHANGE_ME",
+        "NEO4J_USER": "neo4j",
+        "NEO4J_PASSWORD": "CHANGE_ME",
+        "REDIS_PASSWORD": "CHANGE_ME",
+        "JWT_SECRET_KEY": "CHANGE_ME_TO_32_CHARS_MINIMUM",
+        "LLM_PROVIDER": "openai",
+        "LLM_MODEL": "gpt-4",
+        "LLM_API_KEY": "CHANGE_ME",
+        "CORS_ORIGINS": "*"
+      }
+    }
+  ]
+}
