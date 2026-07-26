@@ -303,3 +303,67 @@ npm run dev
 cd analytics
 python scheduler.py
 ```
+
+## Production Deployment
+
+### HTTPS Setup
+
+The production deployment uses Caddy as an edge proxy for TLS termination.
+
+1. Set your domain and email in `.env`:
+
+```bash
+DOMAIN=your-domain.com
+ACME_EMAIL=your-email@domain.com
+CORS_ORIGINS=["https://your-domain.com"]
+```
+
+2. Start the stack:
+
+```bash
+docker compose up -d
+```
+
+Caddy will automatically provision a TLS certificate via Let's Encrypt and redirect all HTTP traffic to HTTPS.
+
+### TLS Certificate Provisioning
+
+Caddy handles certificate provisioning and renewal automatically:
+
+- **Automatic (Let's Encrypt):** When `DOMAIN` is set to a real domain, Caddy requests a certificate via ACME HTTP-01 challenge, stores it in the `caddy_data` volume, and auto-renews before expiry.
+- **Local development:** When `DOMAIN=localhost` (default), Caddy uses its internal CA for self-signed certificates. Browsers will show a warning — this is expected.
+- **Custom certificates:** Mount certificate files and update the Caddyfile with a `tls` directive:
+
+```caddyfile
+example.com {
+    tls /certs/cert.pem /certs/key.pem
+    # ... rest of config
+}
+```
+
+### Rate Limits
+
+| Route | Limit | Window |
+|-------|-------|--------|
+| All (global) | 100 requests | 1 minute |
+| `/api/*` | 30 requests | 1 minute |
+| `/api/chat/ws` | None (WebSocket) | — |
+
+### Forwarded Headers
+
+Caddy sets the following headers on all proxied requests:
+
+- `X-Forwarded-For`: Client IP address
+- `X-Forwarded-Proto`: Original protocol (http/https)
+- `X-Forwarded-Host`: Original host header
+
+These headers are set by Caddy and passed through the Nginx reverse proxy to the backend.
+
+### Exposed Ports
+
+| Port | Service | Purpose |
+|------|---------|---------|
+| 80 | Caddy | HTTP (redirects to HTTPS) |
+| 443 | Caddy | HTTPS (production) |
+
+All other services (frontend, backend, databases) are internal to the Docker network and not directly accessible from the host.
