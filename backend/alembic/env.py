@@ -3,6 +3,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from app.config import settings
 from app.db.base import Base
 from app.models import *  # noqa: F401, F403
 
@@ -10,6 +11,15 @@ config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# Dynamically set database URL from app settings
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgresql+asyncpg://"):
+    db_url = db_url.replace("postgresql+asyncpg://", "postgresql+psycopg2://", 1)
+elif db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+
+config.set_main_option("sqlalchemy.url", db_url)
 
 target_metadata = Base.metadata
 
@@ -29,8 +39,10 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    section = config.get_section(config.config_ini_section, {})
+    section["sqlalchemy.url"] = db_url
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

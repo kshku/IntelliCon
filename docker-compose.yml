@@ -69,7 +69,13 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; r = httpx.get('http://localhost:8000/health'); exit(0 if r.status_code == 200 and r.json()['status'] == 'healthy' else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped
 
   frontend:
@@ -80,7 +86,9 @@ services:
       - app
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
+    volumes:
+      - ./frontend/src:/app/src
     restart: unless-stopped
 
   analytics:
