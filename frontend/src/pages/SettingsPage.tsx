@@ -29,6 +29,12 @@ const PROVIDER_MODELS: Record<string, { value: string; label: string }[]> = {
     { value: 'gemini-2.0-flash', label: 'gemini-2.0-flash' },
     { value: 'gemini-pro', label: 'gemini-pro' },
   ],
+  groq: [
+    { value: 'llama-3.3-70b-versatile', label: 'llama-3.3-70b-versatile' },
+    { value: 'llama-3.1-8b-instant', label: 'llama-3.1-8b-instant' },
+    { value: 'mixtral-8x7b-32768', label: 'mixtral-8x7b-32768' },
+    { value: 'gemma2-9b-it', label: 'gemma2-9b-it' },
+  ],
 };
 
 export const SettingsPage: React.FC = () => {
@@ -103,6 +109,7 @@ export const SettingsPage: React.FC = () => {
                   <option value="openai">{t('settings.openai_recommended')}</option>
                   <option value="anthropic">{t('settings.anthropic')}</option>
                   <option value="gemini">{t('settings.gemini')}</option>
+                  <option value="groq">Groq</option>
                 </select>
               </div>
 

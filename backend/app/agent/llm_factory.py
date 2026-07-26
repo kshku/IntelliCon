@@ -28,5 +28,9 @@ def get_llm(
         from langchain_google_genai import ChatGoogleGenerativeAI
 
         return ChatGoogleGenerativeAI(model=model, google_api_key=api_key)  # type: ignore[call-arg]
+    if provider == "groq":
+        from langchain_groq import ChatGroq
 
-    raise ValueError(f"Unknown LLM provider: {provider!r}. Supported: openai, anthropic, gemini")
+        return ChatGroq(model=model, api_key=api_key)  # type: ignore[arg-type, call-arg]
+
+    raise ValueError(f"Unknown LLM provider: {provider!r}. Supported: openai, anthropic, gemini, groq")
