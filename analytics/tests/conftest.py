@@ -15,7 +15,7 @@ def engine():
     eng.dispose()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def schema(engine):
     """Create the analytics schema, create tables, yield, then drop it."""
     schema_name = "analytics"
