@@ -103,14 +103,18 @@ async def chat_websocket(
                 await session_manager.save_session(session_id, state)
             else:
                 agent_message_content = ""
-                from app.agent.llm_factory import active_llm_provider, active_llm_model, active_llm_api_key
+                from app.agent.llm_factory import (
+                    active_llm_api_key,
+                    active_llm_model,
+                    active_llm_provider,
+                )
                 active_provider = llm_provider or settings.LLM_PROVIDER
                 active_model = llm_model or settings.LLM_MODEL
-                
+
                 token_provider = active_llm_provider.set(active_provider)
                 token_model = active_llm_model.set(active_model)
                 token_api_key = active_llm_api_key.set(active_api_key)
-                
+
                 try:
                     current_graph, _ = create_agent(
                         provider=active_provider,

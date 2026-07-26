@@ -13,6 +13,7 @@ from app.tools.base import ToolRegistry
 def _agent_node(llm: BaseChatModel, tools: Sequence[Any] | None = None) -> Callable:
     async def agent(state: AgentState) -> dict:
         from langchain_core.messages import SystemMessage
+
         from app.agent.system_prompt import get_system_prompt
 
         system_prompt = get_system_prompt()
