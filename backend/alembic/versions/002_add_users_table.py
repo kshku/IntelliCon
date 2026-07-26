@@ -44,6 +44,7 @@ def upgrade() -> None:
     op.create_index("ix_users_employee_id", "users", ["employee_id"])
 
     import os
+
     import bcrypt
 
     admin_pw = os.getenv("SEED_ADMIN_PASSWORD", "admin123")
