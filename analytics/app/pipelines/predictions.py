@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import numpy as np
@@ -30,9 +30,7 @@ def _crime_forecast(session: Session) -> list[dict]:
     ).fetchall()
 
     if len(rows) < 3:
-        logger.warning(
-            "Not enough historical data for crime forecast (need >= 3 months)"
-        )
+        logger.warning("Not enough historical data for crime forecast (need >= 3 months)")
         return []
 
     months = np.arange(len(rows), dtype=float)
@@ -42,9 +40,9 @@ def _crime_forecast(session: Session) -> list[dict]:
     predictions = []
     last_month = rows[-1][0]
     if isinstance(last_month, datetime):
-        base_date = last_month.replace(tzinfo=timezone.utc)
+        base_date = last_month.replace(tzinfo=UTC)
     else:
-        base_date = datetime(last_month.year, last_month.month, 1, tzinfo=timezone.utc)
+        base_date = datetime(last_month.year, last_month.month, 1, tzinfo=UTC)
 
     for i in range(1, 4):
         next_month = base_date + relativedelta(months=i)
@@ -96,7 +94,7 @@ def _recidivism_scoring(session: Session) -> list[dict]:
                 "entity_id": accused_id,
                 "prediction_value": round(risk, 4),
                 "confidence": round(min(0.95, 0.5 + case_count * 0.05), 4),
-                "period_date": datetime.now(timezone.utc),
+                "period_date": datetime.now(UTC),
                 "model_version": MODEL_VERSION,
             }
         )
@@ -109,7 +107,9 @@ def _resolution_time(session: Session) -> list[dict]:
     rows = session.execute(
         text(
             "SELECT cc.case_category_id, cc.category_name, "
-            "AVG(EXTRACT(EPOCH FROM (NOW()::date - TO_DATE(cm.crime_registered_date, 'YYYY-MM-DD'))) / 86400) AS avg_days, "
+            "AVG(EXTRACT(EPOCH FROM (NOW()::date - "
+            "TO_DATE(cm.crime_registered_date, 'YYYY-MM-DD'))) / 86400) "
+            "AS avg_days, "
             "COUNT(*) AS sample_size "
             "FROM case_master cm "
             "JOIN case_category cc ON cc.case_category_id = cm.case_category_id "
@@ -131,7 +131,7 @@ def _resolution_time(session: Session) -> list[dict]:
                 "entity_id": cat_id,
                 "prediction_value": round(float(avg_days), 2),
                 "confidence": round(confidence, 4),
-                "period_date": datetime.now(timezone.utc),
+                "period_date": datetime.now(UTC),
                 "model_version": MODEL_VERSION,
             }
         )
@@ -173,7 +173,7 @@ def _seasonal_patterns(session: Session) -> list[dict]:
                 "entity_id": month_num,
                 "prediction_value": round(seasonal_index, 4),
                 "confidence": round(min(0.95, count / max(avg_per_month, 1)), 4),
-                "period_date": datetime.now(timezone.utc),
+                "period_date": datetime.now(UTC),
                 "model_version": MODEL_VERSION,
             }
         )
@@ -184,14 +184,20 @@ def _seasonal_patterns(session: Session) -> list[dict]:
 @register_job(
     "predictive_analytics",
     schedule="cron",
-    description="Generate crime forecasts, recidivism scores, resolution estimates, and seasonal patterns",
+    description=(
+        "Generate crime forecasts, recidivism scores, "
+        "resolution estimates, and seasonal patterns"
+    ),
     day_of_week="sun",
     hour=4,
     minute=0,
 )
 class PredictiveAnalyticsPipeline:
     name = "predictive_analytics"
-    description = "Generate crime forecasts, recidivism scores, resolution estimates, and seasonal patterns"
+    description = (
+        "Generate crime forecasts, recidivism scores, "
+        "resolution estimates, and seasonal patterns"
+    )
 
     def run(self, session: Session) -> dict[str, Any]:
         logger.info("Running predictive analytics pipeline...")

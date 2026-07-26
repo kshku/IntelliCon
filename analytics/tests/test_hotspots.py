@@ -2,12 +2,12 @@ from unittest.mock import MagicMock, patch
 
 from app.pipelines.hotspots import (
     HotspotDetectionPipeline,
-    _haversine_km,
     _classify_severity,
     _cluster_cases,
     _compute_radius_km,
     _dominant_crime_type,
     _fetch_cases,
+    _haversine_km,
 )
 
 
