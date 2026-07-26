@@ -14,6 +14,10 @@ export POSTGRES_PASSWORD=testpass
 export NEO4J_PASSWORD=testpass
 export REDIS_PASSWORD=testpass
 
+# Create a minimal .env so the base compose file's env_file references don't fail.
+# The test overlay disables env_file, but Compose validates the path before merging.
+touch .env
+
 COMPOSE_FILES="-f docker-compose.yml -f docker-compose.test.yml"
 TIMEOUT="${SMOKE_TEST_TIMEOUT:-120}"
 BACKEND_URL="http://localhost:8000"
