@@ -14,6 +14,7 @@ from app.api.graph import router as graph_router
 from app.api.pdf import router as pdf_router
 from app.api.translation import router as translation_router
 from app.config import settings
+from app.config_validator import validate_production_config
 from app.db.migrations import get_current_revision, run_migrations, wait_for_db
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             "Set a strong random value via the JWT_SECRET_KEY env var."
         )
         raise RuntimeError("JWT_SECRET_KEY must be changed from default")
+
+    # Validate production configuration
+    config_errors = validate_production_config(settings)
+    if config_errors:
+        error_msg = "Production configuration invalid:\n" + "\n".join(
+            f"  - {e}" for e in config_errors
+        )
+        logger.critical(error_msg)
+        raise RuntimeError(error_msg)
 
     logger.info("Starting IntelliCon backend...")
 
