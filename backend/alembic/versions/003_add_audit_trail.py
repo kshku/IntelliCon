@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = "003_add_audit_trail"
-down_revision: str | None = "001_initial"
+down_revision: str | None = "002_add_users"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
