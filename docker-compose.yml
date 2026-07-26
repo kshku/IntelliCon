@@ -87,6 +87,12 @@ services:
         condition: service_healthy
     volumes:
       - ./frontend/src:/app/src
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     restart: unless-stopped
 
   caddy:
