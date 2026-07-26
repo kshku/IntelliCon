@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 
@@ -17,7 +18,7 @@ _registry: dict[str, JobDefinition] = {}
 
 def register_job(
     name: str, schedule: str, description: str = "", **schedule_kwargs: object
-) -> callable:
+) -> Callable:
     """Decorator: registers a pipeline class as a scheduled job."""
 
     def decorator(pipeline_class: type) -> type:
