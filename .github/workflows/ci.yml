@@ -67,11 +67,12 @@ jobs:
       - name: Install dependencies
         run: pip install -r backend/requirements.txt -r backend/requirements-dev.txt
       - name: Run tests
+        working-directory: backend
         env:
           DATABASE_URL: postgresql://intellicon:intellicon@localhost:5432/intellicon_test
           REDIS_URL: redis://localhost:6379/0
           JWT_SECRET_KEY: test-secret
-        run: pytest backend/tests/ -v
+        run: pytest tests/ -v
 
   frontend:
     runs-on: ubuntu-latest
