@@ -225,6 +225,8 @@ docker compose exec backend alembic upgrade head
 docker compose exec backend python -m app.db.seed
 ```
 
+Database migrations run automatically on backend startup. The backend will not report as healthy until all migrations are complete.
+
 The first build can take a few minutes while Docker downloads base images and
 installs dependencies. Once the services are ready, open:
 

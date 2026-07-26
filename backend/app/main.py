@@ -14,12 +14,17 @@ from app.api.graph import router as graph_router
 from app.api.pdf import router as pdf_router
 from app.api.translation import router as translation_router
 from app.config import settings
+from app.db.migrations import get_current_revision, run_migrations, wait_for_db
 
 logger = logging.getLogger(__name__)
 
+_migrations_completed = False
+
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Handle application startup and shutdown events."""
+    global _migrations_completed
     from app.db.neo4j import close_driver
     from app.db.session import engine
 
@@ -31,7 +36,17 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
         raise RuntimeError("JWT_SECRET_KEY must be changed from default")
 
     logger.info("Starting IntelliCon backend...")
+
+    # Wait for database to be available
+    wait_for_db()
+
+    # Run migrations
+    run_migrations()
+    _migrations_completed = True
+    logger.info("Backend startup complete")
+
     yield
+
     logger.info("Shutting down IntelliCon backend...")
     await engine.dispose()
     close_driver()
@@ -63,12 +78,25 @@ app.include_router(cases_router)
 
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str | dict[str, str | None]]:
+    """Health check endpoint that verifies database migrations are complete."""
     from sqlalchemy import text
 
     from app.db.session import engine
 
-    health = {"status": "healthy", "service": "intellicon-backend", "checks": {}}
+    if not _migrations_completed:
+        return {
+            "status": "starting",
+            "service": "intellicon-backend",
+            "message": "Migrations in progress",
+        }
+
+    health: dict[str, str | dict[str, str | None]] = {
+        "status": "healthy",
+        "service": "intellicon-backend",
+        "database_revision": get_current_revision() or "unknown",
+        "checks": {},
+    }
 
     try:
         async with engine.connect() as conn:
