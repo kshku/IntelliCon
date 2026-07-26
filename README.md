@@ -210,6 +210,7 @@ cp .env.example .env
 
 # Set a strong JWT secret and the API key for the selected LLM provider.
 # Do not use the placeholder values from .env.example in a real environment.
+# You can generate secrets with: python -c "import secrets; print(secrets.token_hex(32))"
 nano .env
 
 # Build the application images and start the full stack in the background
@@ -217,12 +218,6 @@ docker compose up --build -d
 
 # Confirm that the services are running
 docker compose ps
-
-# Apply the backend database migrations (run after the first startup and after upgrades)
-docker compose exec backend alembic upgrade head
-
-# Optional: load the development sample data and default users
-docker compose exec backend python -m app.db.seed
 ```
 
 Database migrations run automatically on backend startup. The backend will not report as healthy until all migrations are complete.
@@ -232,7 +227,6 @@ installs dependencies. Once the services are ready, open:
 
 - Frontend: <http://localhost:3000>
 - Backend health check: <http://localhost:8000/health>
-- Neo4j Browser: <http://localhost:7474>
 
 To follow startup logs or stop the stack:
 
@@ -250,18 +244,47 @@ docker compose down -v
 `docker compose down -v` deletes the local PostgreSQL, Neo4j, and Redis data.
 Use it only when a clean local environment is intended.
 
+### Exposed Ports
+
+Only the frontend and backend are exposed to the host. Data services
+(PostgreSQL, Neo4j, Redis) are internal to the Docker network and are **not**
+accessible from the host by default.
+
+| Port | Service | Purpose |
+|------|---------|---------|
+| 3000 | Frontend | React UI |
+| 8000 | Backend | FastAPI REST API |
+
+To temporarily expose a data service for debugging (e.g., connecting a local
+client), override the port mapping:
+
+```bash
+docker compose up -d postgres
+docker compose run --rm -p 5432:5432 postgres
+```
+
+### Secrets
+
+All credentials must be set in `.env` before running `docker compose up`. The
+stack will refuse to start if any required secret is missing. See `.env.example`
+for the full list. **Do not use placeholder values in production.**
+
 ### Configuration
 
 Key environment variables (see `.env.example` for full list):
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `JWT_SECRET_KEY` | HMAC key for JWT signing | — (required) |
 | `LLM_PROVIDER` | LLM provider (`openai`, `anthropic`, `gemini`) | `openai` |
 | `LLM_MODEL` | Model name | `gpt-4o` |
 | `LLM_API_KEY` | API key for the chosen provider | — |
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://...` |
+| `POSTGRES_PASSWORD` | PostgreSQL password | — (required) |
+| `NEO4J_PASSWORD` | Neo4j password | — (required) |
+| `REDIS_PASSWORD` | Redis password | — (required) |
+| `DATABASE_URL` | PostgreSQL connection string | — (set by compose) |
 | `NEO4J_URI` | Neo4j connection URI | `bolt://localhost:7687` |
-| `REDIS_URL` | Redis connection string | `redis://localhost:6379` |
+| `REDIS_URL` | Redis connection string | — (set by compose) |
 
 ## Development
 
