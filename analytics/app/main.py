@@ -1,7 +1,7 @@
 import logging
 import traceback
 from collections.abc import Generator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -15,9 +15,7 @@ from app.db import SessionLocal, init_schema
 from app.models import JobExecutionLog
 from app.registry import get_registry
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
@@ -34,7 +32,7 @@ def success_response(data, metadata=None):
     return {
         "success": True,
         "data": data,
-        "metadata": metadata or {"timestamp": datetime.now(timezone.utc).isoformat()},
+        "metadata": metadata or {"timestamp": datetime.now(UTC).isoformat()},
     }
 
 
@@ -59,7 +57,7 @@ def run_job(job_name: str) -> None:
     execution = JobExecutionLog(
         job_name=job_name,
         status="running",
-        started_at=datetime.now(timezone.utc),
+        started_at=datetime.now(UTC),
     )
     session.add(execution)
     session.commit()
@@ -73,7 +71,7 @@ def run_job(job_name: str) -> None:
         result = pipeline.run(session)
 
         execution.status = "completed"
-        execution.completed_at = datetime.now(timezone.utc)
+        execution.completed_at = datetime.now(UTC)
         execution.rows_processed = result.get("rows_processed", 0)
         execution.metadata_ = result
 
@@ -84,7 +82,7 @@ def run_job(job_name: str) -> None:
         )
     except Exception as e:
         execution.status = "failed"
-        execution.completed_at = datetime.now(timezone.utc)
+        execution.completed_at = datetime.now(UTC)
         execution.error_message = traceback.format_exc()
         session.commit()
         logger.error(f"Job '{job_name}' failed (execution_id={execution_id}): {e}")
@@ -218,11 +216,11 @@ def trigger_job(job_name: str) -> dict:
 
     scheduler.add_job(
         run_job,
-        id=f"{job_name}_manual_{datetime.now(timezone.utc).timestamp()}",
+        id=f"{job_name}_manual_{datetime.now(UTC).timestamp()}",
         name=f"{job_name}_manual",
         kwargs={"job_name": job_name},
         trigger="date",
-        run_date=datetime.now(timezone.utc),
+        run_date=datetime.now(UTC),
         replace_existing=False,
     )
 
@@ -245,21 +243,15 @@ def get_job_status(job_name: str, session: Session = Depends(get_session)) -> di
     )
 
     if not execution:
-        raise HTTPException(
-            status_code=404, detail=f"No executions found for job '{job_name}'"
-        )
+        raise HTTPException(status_code=404, detail=f"No executions found for job '{job_name}'")
 
     return success_response(
         {
             "job_name": job_name,
             "status": execution.status,
             "execution_id": execution.id,
-            "started_at": execution.started_at.isoformat()
-            if execution.started_at
-            else None,
-            "completed_at": execution.completed_at.isoformat()
-            if execution.completed_at
-            else None,
+            "started_at": execution.started_at.isoformat() if execution.started_at else None,
+            "completed_at": execution.completed_at.isoformat() if execution.completed_at else None,
             "next_run_time": None,
         }
     )
@@ -295,16 +287,10 @@ def list_executions(
 
 @app.get("/executions/{execution_id}")
 def get_execution(execution_id: int, session: Session = Depends(get_session)) -> dict:
-    execution = (
-        session.query(JobExecutionLog)
-        .filter(JobExecutionLog.id == execution_id)
-        .first()
-    )
+    execution = session.query(JobExecutionLog).filter(JobExecutionLog.id == execution_id).first()
 
     if not execution:
-        raise HTTPException(
-            status_code=404, detail=f"Execution {execution_id} not found"
-        )
+        raise HTTPException(status_code=404, detail=f"Execution {execution_id} not found")
 
     return success_response(
         ExecutionResponse(

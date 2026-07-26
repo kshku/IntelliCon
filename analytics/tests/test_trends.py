@@ -3,12 +3,12 @@ from unittest.mock import MagicMock, patch
 
 from app.pipelines.trends import (
     TrendAnalysisPipeline,
-    _month_key,
-    _parse_date,
-    _monthly_counts,
-    _yoy_comparison,
-    _moving_averages,
     _chargesheet_rates,
+    _month_key,
+    _monthly_counts,
+    _moving_averages,
+    _parse_date,
+    _yoy_comparison,
 )
 
 

@@ -32,8 +32,8 @@ def session(engine, schema):
     """Provide a transactional session that rolls back after each test."""
     connection = engine.connect()
     transaction = connection.begin()
-    Session = sessionmaker(bind=connection)
-    sess = Session()
+    session_factory = sessionmaker(bind=connection)
+    sess = session_factory()
     yield sess
     sess.close()
     transaction.rollback()

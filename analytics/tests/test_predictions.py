@@ -1,6 +1,5 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
-
 
 from app.pipelines.predictions import (
     PredictiveAnalyticsPipeline,
@@ -139,7 +138,7 @@ def test_pipeline_run():
                     "entity_id": None,
                     "prediction_value": 100.0,
                     "confidence": 0.8,
-                    "period_date": datetime.now(timezone.utc),
+                    "period_date": datetime.now(UTC),
                     "model_version": "v1.0",
                 }
             ],

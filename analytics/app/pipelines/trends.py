@@ -85,7 +85,9 @@ def _yoy_comparison(session: Session) -> list[dict]:
     rows = session.execute(
         text(
             "WITH monthly AS ("
-            "  SELECT DATE_TRUNC('month', TO_DATE(cm.crime_registered_date, 'YYYY-MM-DD')) AS month, "
+            "  SELECT DATE_TRUNC('month', "
+            "    TO_DATE(cm.crime_registered_date, 'YYYY-MM-DD')) "
+            "    AS month, "
             "  COALESCE(d.district_name, 'Unknown') AS district, "
             "  COUNT(*) AS cnt "
             "  FROM case_master cm "
@@ -200,14 +202,18 @@ def _chargesheet_rates(session: Session) -> list[dict]:
 @register_job(
     "trend_analysis",
     schedule="cron",
-    description="Compute monthly crime counts, YoY comparisons, moving averages, and chargesheet rates",
+    description=(
+        "Compute monthly crime counts, YoY comparisons, " "moving averages, and chargesheet rates"
+    ),
     day_of_week="sun",
     hour=3,
     minute=0,
 )
 class TrendAnalysisPipeline:
     name = "trend_analysis"
-    description = "Compute monthly crime counts, YoY comparisons, moving averages, and chargesheet rates"
+    description = (
+        "Compute monthly crime counts, YoY comparisons, " "moving averages, and chargesheet rates"
+    )
 
     def run(self, session: Session) -> dict[str, Any]:
         logger.info("Running crime trend analysis pipeline...")

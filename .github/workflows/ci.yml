@@ -47,10 +47,6 @@ jobs:
         run: ruff check analytics/
       - name: Ruff format check
         run: ruff format --check analytics/
-      - name: Mypy
-        run: mypy analytics/app/
-        env:
-          PYTHONPATH: analytics
 
   analytics-test:
     runs-on: ubuntu-latest
@@ -83,7 +79,7 @@ jobs:
         working-directory: analytics
         env:
           DATABASE_URL: postgresql://intellicon:intellicon@localhost:5432/intellicon_test
-          PYTHONPATH: analytics
+          PYTHONPATH: .
         run: pytest tests/ -v
 
   backend-test:

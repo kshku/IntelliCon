@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Float, Integer, String, Text, TIMESTAMP, Index
+from sqlalchemy import TIMESTAMP, Column, Float, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase
 
