@@ -20,6 +20,7 @@ class GraphQueryRequest(BaseModel):
 @router.post("/sync")
 async def trigger_sync():
     from neo4j.exceptions import ServiceUnavailable
+
     try:
         stats = await sync_all()
         return {"status": "ok", "synced": stats}
@@ -32,6 +33,7 @@ async def trigger_sync():
 @router.post("/schema")
 async def init_schema():
     from neo4j.exceptions import ServiceUnavailable
+
     try:
         get_driver()
         statements = GRAPH_SCHEMA["constraints"] + GRAPH_SCHEMA["indexes"]
@@ -47,6 +49,7 @@ async def init_schema():
 @router.post("/query")
 async def query_graph(request: GraphQueryRequest):
     from neo4j.exceptions import ServiceUnavailable
+
     try:
         from app.tools.graph_query import GraphQueryTool
 
@@ -66,7 +69,7 @@ async def query_graph(request: GraphQueryRequest):
                 return {
                     "status": "offline",
                     "data": {"nodes": [], "links": []},
-                    "message": "Neo4j graph database is offline."
+                    "message": "Neo4j graph database is offline.",
                 }
             raise HTTPException(status_code=400, detail=result.error)
 
@@ -79,7 +82,7 @@ async def query_graph(request: GraphQueryRequest):
         return {
             "status": "offline",
             "data": {"nodes": [], "links": []},
-            "message": "Neo4j graph database is offline."
+            "message": "Neo4j graph database is offline.",
         }
     except HTTPException:
         raise
@@ -88,6 +91,6 @@ async def query_graph(request: GraphQueryRequest):
             return {
                 "status": "offline",
                 "data": {"nodes": [], "links": []},
-                "message": "Neo4j graph database is offline."
+                "message": "Neo4j graph database is offline.",
             }
         raise HTTPException(status_code=500, detail=str(exc))

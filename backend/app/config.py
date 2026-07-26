@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_MINUTES: int = 60
 
+    # Initial User Seed Passwords (configurable via environment/dotenv)
+    SEED_ADMIN_PASSWORD: str = "admin123"
+    SEED_INVESTIGATOR_PASSWORD: str = "inv123"
+    SEED_SUPERVISOR_PASSWORD: str = "sup123"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

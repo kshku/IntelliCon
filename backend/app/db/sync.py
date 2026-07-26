@@ -14,6 +14,7 @@ BATCH_SIZE = 500
 
 async def sync_all() -> dict[str, int]:
     from neo4j.exceptions import ServiceUnavailable
+
     stats: dict[str, int] = {}
     try:
         stats["cases"] = await _sync_cases()

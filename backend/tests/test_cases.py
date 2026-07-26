@@ -122,9 +122,7 @@ def test_get_case_details_success():
     status = CaseStatusMaster(status_name="Under Investigation")
     head = CrimeHead(head_name="Theft")
 
-    session = _make_mock_session(
-        case_details=(case, [compl], [acc], [vic], unit, status, head)
-    )
+    session = _make_mock_session(case_details=(case, [compl], [acc], [vic], unit, status, head))
     client = _get_client(session)
     response = client.get("/cases/12")
     assert response.status_code == 200

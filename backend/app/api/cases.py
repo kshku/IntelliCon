@@ -203,9 +203,7 @@ async def upload_cases(payload: UploadPayload, session: AsyncSession = Depends(g
             await session.flush()
 
         ch_name = r.get("crime_head", "Theft")
-        res_head = await session.execute(
-            select(CrimeHead).where(CrimeHead.head_name == ch_name)
-        )
+        res_head = await session.execute(select(CrimeHead).where(CrimeHead.head_name == ch_name))
         head = res_head.scalar_one_or_none()
         if not head:
             head = CrimeHead(head_name=ch_name)

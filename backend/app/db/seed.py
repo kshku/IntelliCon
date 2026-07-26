@@ -559,16 +559,22 @@ def main() -> None:
             print("Seeding default users...")
             default_users = [
                 User(
-                    employee_id=1, username="admin",
-                    password_hash=hash_password("admin"), role="admin",
+                    employee_id=1,
+                    username="admin",
+                    password_hash=hash_password(settings.SEED_ADMIN_PASSWORD),
+                    role="admin",
                 ),
                 User(
-                    employee_id=2, username="investigator",
-                    password_hash=hash_password("inv123"), role="investigator",
+                    employee_id=2,
+                    username="investigator",
+                    password_hash=hash_password(settings.SEED_INVESTIGATOR_PASSWORD),
+                    role="investigator",
                 ),
                 User(
-                    employee_id=3, username="supervisor",
-                    password_hash=hash_password("sup123"), role="supervisor",
+                    employee_id=3,
+                    username="supervisor",
+                    password_hash=hash_password(settings.SEED_SUPERVISOR_PASSWORD),
+                    role="supervisor",
                 ),
             ]
             session.add_all(default_users)

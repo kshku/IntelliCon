@@ -44,6 +44,12 @@ def upgrade() -> None:
     op.create_index("ix_users_employee_id", "users", ["employee_id"])
 
     # Seed default users
+    import os
+
+    admin_pw = os.getenv("SEED_ADMIN_PASSWORD", "admin123")
+    inv_pw = os.getenv("SEED_INVESTIGATOR_PASSWORD", "inv123")
+    sup_pw = os.getenv("SEED_SUPERVISOR_PASSWORD", "sup123")
+
     users_table = sa.table(
         "users",
         sa.column("employee_id", sa.Integer),
@@ -57,19 +63,19 @@ def upgrade() -> None:
             {
                 "employee_id": 1,
                 "username": "admin",
-                "password_hash": pwd_context.hash("admin"),
+                "password_hash": pwd_context.hash(admin_pw),
                 "role": "admin",
             },
             {
                 "employee_id": 2,
                 "username": "investigator",
-                "password_hash": pwd_context.hash("inv123"),
+                "password_hash": pwd_context.hash(inv_pw),
                 "role": "investigator",
             },
             {
                 "employee_id": 3,
                 "username": "supervisor",
-                "password_hash": pwd_context.hash("sup123"),
+                "password_hash": pwd_context.hash(sup_pw),
                 "role": "supervisor",
             },
         ],
