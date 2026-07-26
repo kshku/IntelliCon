@@ -13,15 +13,22 @@ BATCH_SIZE = 500
 
 
 async def sync_all() -> dict[str, int]:
+    from neo4j.exceptions import ServiceUnavailable
+
     stats: dict[str, int] = {}
-    stats["cases"] = await _sync_cases()
-    stats["persons"] = await _sync_persons()
-    stats["employees"] = await _sync_employees()
-    stats["police_stations"] = await _sync_police_stations()
-    stats["courts"] = await _sync_courts()
-    stats["case_relationships"] = await _sync_case_relationships()
-    stats["co_accused"] = await _sync_co_accused()
-    logger.info("Sync complete: %s", stats)
+    try:
+        stats["cases"] = await _sync_cases()
+        stats["persons"] = await _sync_persons()
+        stats["employees"] = await _sync_employees()
+        stats["police_stations"] = await _sync_police_stations()
+        stats["courts"] = await _sync_courts()
+        stats["case_relationships"] = await _sync_case_relationships()
+        stats["co_accused"] = await _sync_co_accused()
+        logger.info("Sync complete: %s", stats)
+    except ServiceUnavailable as exc:
+        logger.warning("Neo4j database is offline. Skipping graph sync: %s", exc)
+    except Exception as exc:
+        logger.error("Failed to sync data to Neo4j: %s", exc)
     return stats
 
 

@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.admin import router as admin_router
 from app.api.audit import router as audit_router
 from app.api.auth import router as auth_router
+from app.api.cases import router as cases_router
+from app.api.chat import router as chat_router
 from app.api.graph import router as graph_router
 from app.api.pdf import router as pdf_router
 from app.api.translation import router as translation_router
@@ -28,7 +30,9 @@ app.include_router(auth_router)
 app.include_router(graph_router)
 app.include_router(pdf_router)
 app.include_router(translation_router, prefix="/api")
-app.include_router(admin_router, prefix="/admin")
+app.include_router(admin_router)
+app.include_router(chat_router, prefix="/api/chat")
+app.include_router(cases_router)
 
 
 @app.get("/health")

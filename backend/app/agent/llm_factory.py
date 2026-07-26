@@ -7,7 +7,7 @@ from app.config import settings
 
 def get_llm() -> BaseChatModel:
     provider = settings.LLM_PROVIDER.lower()
-    api_key = settings.LLM_API_KEY
+    api_key = settings.LLM_API_KEY or "mock-key"
     model = settings.LLM_MODEL
 
     if provider == "openai":

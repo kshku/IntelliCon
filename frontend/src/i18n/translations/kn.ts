@@ -87,6 +87,12 @@ export default {
     closed_label: 'ಮುಚ್ಚಲಾಗಿದೆ',
     chargesheet_filed: 'ಚಾರ್ಜ್\u200Cಶೀಟ್ ಸಲ್ಲಿಸಲಾಗಿದೆ',
     under_investigation: 'ತನಿಖೆಯಲ್ಲಿದೆ',
+    case_details: 'ಪ್ರಕರಣದ ವಿವರಗಳು',
+    case_search_title: 'ಹುಡುಕಾಟದ ಫಲಿತಾಂಶಗಳು',
+    upload_success: 'ದಾಖಲೆಗಳನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ',
+    upload_file_desc: 'ಅಪರಾಧ ದಾಖಲೆಗಳನ್ನು ಒಳಗೊಂಡಿರುವ CSV ಅಥವಾ JSON ಫೈಲ್ ಆಯ್ಕೆಮಾಡಿ.',
+    select_file: 'ಫೈಲ್ ಆಯ್ಕೆಮಾಡಿ',
+    uploading: 'ಡೇಟಾ ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...',
   },
   chat: {
     ai_investigative_assistant: 'AI ತನಿಖಾ ಸಹಾಯಕ',

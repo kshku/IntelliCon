@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../stores/authStore';
+import { apiFetch } from '../api/client';
 
 interface User {
   user_id: number;
@@ -23,7 +23,6 @@ const ROLES = ['investigator', 'supervisor', 'admin'];
 
 export function AdminPage() {
   const { t } = useTranslation();
-  const token = useAuthStore((s) => s.token);
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -33,20 +32,17 @@ export function AdminPage() {
   const [form, setForm] = useState<UserFormData>({ username: '', password: '', employee_id: '', role: 'investigator' });
   const [formError, setFormError] = useState('');
 
-  const headers: Record<string, string> = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
-
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/admin/users', { headers });
-      if (!res.ok) throw new Error('Failed to fetch users');
-      setUsers(await res.json());
+      const data = await apiFetch<User[]>('/admin/users');
+      setUsers(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
@@ -82,22 +78,15 @@ export function AdminPage() {
         if (form.password) body.password = form.password;
         if (Number(form.employee_id) !== editingUser.employee_id) body.employee_id = Number(form.employee_id);
         if (form.role !== editingUser.role) body.role = form.role;
-        const res = await fetch(`/admin/users/${editingUser.user_id}`, {
-          method: 'PUT', headers, body: JSON.stringify(body),
+        await apiFetch(`/admin/users/${editingUser.user_id}`, {
+          method: 'PUT',
+          json: body,
         });
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.detail || 'Update failed');
-        }
       } else {
-        const res = await fetch('/admin/users', {
-          method: 'POST', headers,
-          body: JSON.stringify({ username: form.username, password: form.password, employee_id: Number(form.employee_id), role: form.role }),
+        await apiFetch('/admin/users', {
+          method: 'POST',
+          json: { username: form.username, password: form.password, employee_id: Number(form.employee_id), role: form.role },
         });
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.detail || 'Create failed');
-        }
       }
       setShowModal(false);
       fetchUsers();
@@ -109,11 +98,7 @@ export function AdminPage() {
   const handleDeactivate = async (u: User) => {
     if (!confirm(t('admin.confirm_deactivate', { username: u.username }))) return;
     try {
-      const res = await fetch(`/admin/users/${u.user_id}`, { method: 'DELETE', headers });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || 'Deactivate failed');
-      }
+      await apiFetch(`/admin/users/${u.user_id}`, { method: 'DELETE' });
       fetchUsers();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Unknown error');

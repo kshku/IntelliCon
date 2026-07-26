@@ -8,6 +8,7 @@ import { ChatPage } from './pages/ChatPage';
 import { NetworkPage } from './pages/NetworkPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AdminPage } from './pages/AdminPage';
+import { MapPage } from './pages/MapPage';
 import { useAuthStore } from './stores/authStore';
 
 function App() {
@@ -15,6 +16,14 @@ function App() {
 
   useEffect(() => {
     initialize();
+
+    // Theme initialization
+    const savedTheme = localStorage.getItem('intellicon_theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, [initialize]);
 
   return (
@@ -28,6 +37,7 @@ function App() {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="chat" element={<ChatPage />} />
             <Route path="network" element={<NetworkPage />} />
+            <Route path="map" element={<MapPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="admin" element={<AdminPage />} />
           </Route>

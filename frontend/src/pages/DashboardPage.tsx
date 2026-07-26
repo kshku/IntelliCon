@@ -7,15 +7,13 @@ import {
   Activity,
   AlertTriangle,
   ChevronDown,
-  Layers,
-  ZoomIn,
-  ZoomOut,
-  MapPin,
   Clock,
   ExternalLink,
   Sliders
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { InteractiveMap } from '../components/InteractiveMap';
+import { UploadDataModal } from '../components/UploadDataModal';
 
 interface KpiData {
   title: string;
@@ -45,9 +43,9 @@ interface RecentCase {
 export const DashboardPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [zoomLevel, setZoomLevel] = useState(1);
   const [timeFilter, setTimeFilter] = useState('Last 6 Months');
   const [hotspotFilter, setHotspotFilter] = useState('Last 30 Days');
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   // KPI Data Configuration
   const kpis: KpiData[] = [
@@ -76,16 +74,9 @@ export const DashboardPage: React.FC = () => {
   ];
 
   // Hotspot Map Pin Coordinates (Bangalore Map Mockup)
-  const mapPins = [
-    { name: 'Koramangala', x: '45%', y: '60%', count: '28 cases', color: 'bg-red-500' },
-    { name: 'Whitefield', x: '82%', y: '35%', count: '41 cases', color: 'bg-red-600' },
-    { name: 'Yeshwanthpur', x: '25%', y: '25%', count: '19 cases', color: 'bg-orange-500' },
-    { name: 'HSR Layout', x: '58%', y: '75%', count: '22 cases', color: 'bg-orange-500' },
-    { name: 'Shivajinagar', x: '48%', y: '42%', count: '35 cases', color: 'bg-red-500' },
-  ];
-
   return (
-    <div className="space-y-8 font-sans pb-12">
+    <>
+      <div className="space-y-8 font-sans pb-12">
       {/* KPI ROW */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         {kpis.map((kpi, idx) => {
@@ -236,66 +227,8 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           {/* Interactive Map Layout Canvas */}
-          <div className="flex-1 bg-slate-100 rounded-custom-lg relative overflow-hidden border border-slate-200 min-h-[220px]">
-            {/* Vector City Grid Background Grid */}
-            <div 
-              className="absolute inset-0 bg-[radial-gradient(#CBD5E1_1px,transparent_1px)] [background-size:16px_16px] transition-transform duration-200"
-              style={{ transform: `scale(${zoomLevel})` }}
-            />
-            
-            {/* Heatmap overlay circles */}
-            <div 
-              className="absolute inset-0 flex items-center justify-center pointer-events-none transition-transform duration-200"
-              style={{ transform: `scale(${zoomLevel})` }}
-            >
-              <div className="absolute top-[35%] left-[45%] w-24 h-24 rounded-full bg-red-500/20 blur-xl animate-pulse" />
-              <div className="absolute top-[50%] left-[65%] w-32 h-32 rounded-full bg-orange-500/15 blur-2xl" />
-              <div className="absolute top-[20%] left-[25%] w-20 h-20 rounded-full bg-red-400/25 blur-lg" />
-            </div>
-
-            {/* Pins */}
-            <div 
-              className="absolute inset-0 transition-transform duration-200"
-              style={{ transform: `scale(${zoomLevel})` }}
-            >
-              {mapPins.map((pin, idx) => (
-                <div
-                  key={idx}
-                  className="absolute cursor-pointer group"
-                  style={{ left: pin.x, top: pin.y }}
-                >
-                  <MapPin className="w-6 h-6 text-red-600 drop-shadow group-hover:scale-110 transition-transform duration-100" fill="#EF4444" />
-                  
-                  {/* Tooltip on Pin Hover */}
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 bg-slate-900 text-white rounded-btn px-2 py-1 text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 shadow-lg pointer-events-none transition-opacity duration-150 z-20">
-                    <span className="block font-bold">{pin.name}</span>
-                    <span className="text-slate-400">{pin.count}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Map Controls */}
-            <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur shadow rounded-btn border border-slate-200 flex flex-col p-1 gap-1 z-10">
-              <button
-                onClick={() => setZoomLevel(prev => Math.min(prev + 0.2, 2))}
-                className="w-8 h-8 rounded-btn hover:bg-slate-100 flex items-center justify-center text-slate-700 cursor-pointer"
-              >
-                <ZoomIn className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setZoomLevel(prev => Math.max(prev - 0.2, 0.6))}
-                className="w-8 h-8 rounded-btn hover:bg-slate-100 flex items-center justify-center text-slate-700 cursor-pointer"
-              >
-                <ZoomOut className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Layers controls */}
-            <button className="absolute top-3 right-3 bg-white/95 backdrop-blur shadow rounded-btn border border-slate-200 px-3 py-2 text-[12px] font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-1.5 cursor-pointer z-10">
-              <Layers className="w-3.5 h-3.5" />
-              <span>{t('common.layers')}</span>
-            </button>
+          <div className="flex-1 rounded-custom-lg overflow-hidden border border-slate-200 min-h-[260px] relative">
+            <InteractiveMap />
           </div>
         </div>
 
@@ -487,7 +420,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* QUICK ACTIONS ROW */}
-      <div className="bg-white border border-border-light rounded-card p-6 shadow-sm">
+      <div className="bg-white border border-border-light rounded-card p-6 shadow-sm no-print">
         <h2 className="text-[15px] font-bold text-heading-dark mb-4 flex items-center gap-1.5">
           <Sliders className="w-4 h-4 text-primary-blue" />
           <span>{t('dashboard.quick_investigation_commands')}</span>
@@ -498,9 +431,9 @@ export const DashboardPage: React.FC = () => {
             { label: t('dashboard.ask_ai_assistant'), action: () => navigate('/chat'), color: 'bg-primary-blue hover:bg-blue-600 text-white shadow-blue-500/10' },
             { label: t('dashboard.advanced_search'), action: () => navigate('/chat'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
             { label: t('dashboard.network_analysis_btn'), action: () => navigate('/network'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
-            { label: t('dashboard.geospatial_map'), action: () => console.log('Geospatial Map - coming soon'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
-            { label: t('dashboard.generate_report'), action: () => console.log('Generate Report - coming soon'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
-            { label: t('dashboard.upload_data'), action: () => console.log('Upload Data - coming soon'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
+            { label: t('dashboard.geospatial_map'), action: () => navigate('/map'), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
+            { label: t('dashboard.generate_report'), action: () => window.print(), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
+            { label: t('dashboard.upload_data'), action: () => setIsUploadOpen(true), color: 'bg-slate-100 hover:bg-slate-200 text-slate-700' },
           ].map((act, idx) => (
             <button
               key={idx}
@@ -512,6 +445,8 @@ export const DashboardPage: React.FC = () => {
           ))}
         </div>
       </div>
-    </div>
+      </div>
+      {isUploadOpen && <UploadDataModal onClose={() => setIsUploadOpen(false)} />}
+    </>
   );
 };
