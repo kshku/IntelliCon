@@ -30,11 +30,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     from app.db.session import engine
 
     if settings.JWT_SECRET_KEY == "change-me-in-production":
-        logger.critical(
-            "JWT_SECRET_KEY is set to the default placeholder. "
-            "Set a strong random value via the JWT_SECRET_KEY env var."
-        )
-        raise RuntimeError("JWT_SECRET_KEY must be changed from default")
+        if settings.ENVIRONMENT == "production":
+            logger.critical(
+                "JWT_SECRET_KEY is set to the default placeholder. "
+                "Set a strong random value via the JWT_SECRET_KEY env var."
+            )
+            raise RuntimeError("JWT_SECRET_KEY must be changed from default")
+        else:
+            logger.warning(
+                "JWT_SECRET_KEY is set to the default placeholder. "
+                "For production, set a strong random value via the JWT_SECRET_KEY env var."
+            )
 
     # Validate production configuration
     config_errors = validate_production_config(settings)
