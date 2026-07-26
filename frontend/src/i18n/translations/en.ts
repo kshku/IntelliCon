@@ -87,6 +87,12 @@ export default {
     closed_label: 'Closed',
     chargesheet_filed: 'Chargesheet Filed',
     under_investigation: 'Under Investigation',
+    case_details: 'Case Details',
+    case_search_title: 'Search Results',
+    upload_success: 'Records uploaded successfully',
+    upload_file_desc: 'Select a CSV or JSON file containing crime records.',
+    select_file: 'Select File',
+    uploading: 'Uploading data...',
   },
   chat: {
     ai_investigative_assistant: 'AI Investigative Assistant',
