@@ -1,5 +1,7 @@
 .env
 .env.local
+.env.production
+.env.staging
 __pycache__/
 *.py[cod]
 *$py.class

@@ -2,6 +2,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi.testclient import TestClient
 
+from app.auth import get_current_user
 from app.db.session import get_session
 from app.main import app
 from app.models import (
@@ -13,6 +14,7 @@ from app.models import (
     Unit,
     Victim,
 )
+from tests.conftest import MOCK_USER
 
 
 def _make_mock_session(cases=None, case_details=None, is_empty_search=False):
@@ -71,7 +73,11 @@ def _get_client(session):
     async def dep():
         yield session
 
+    async def dep_user():
+        return MOCK_USER
+
     app.dependency_overrides[get_session] = dep
+    app.dependency_overrides[get_current_user] = dep_user
     return TestClient(app)
 
 
