@@ -61,13 +61,13 @@ def test_format_message_content_int():
 
 
 def test_missing_session_id(tool):
-    result = asyncio.get_event_loop().run_until_complete(tool.execute())
+    result = asyncio.run(tool.execute())
     assert not result.success
     assert "session_id is required" in result.error
 
 
 def test_empty_session_id(tool):
-    result = asyncio.get_event_loop().run_until_complete(tool.execute(session_id=""))
+    result = asyncio.run(tool.execute(session_id=""))
     assert not result.success
     assert "session_id is required" in result.error
 
@@ -81,7 +81,7 @@ def test_session_not_found(tool):
     mock_manager.close = AsyncMock()
 
     with patch("app.agent.session.SessionManager", return_value=mock_manager):
-        result = asyncio.get_event_loop().run_until_complete(tool.execute(session_id="nonexistent"))
+        result = asyncio.run(tool.execute(session_id="nonexistent"))
     assert not result.success
     assert "not found or expired" in result.error
 
@@ -95,7 +95,7 @@ def test_session_empty_messages(tool):
     mock_manager.close = AsyncMock()
 
     with patch("app.agent.session.SessionManager", return_value=mock_manager):
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             tool.execute(session_id="empty-session")
         )
     assert not result.success
@@ -202,7 +202,7 @@ def test_execute_full_flow(tool, sample_messages):
     mock_manager.close = AsyncMock()
 
     with patch("app.agent.session.SessionManager", return_value=mock_manager):
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             tool.execute(session_id="full-flow", title="Test Report")
         )
 
