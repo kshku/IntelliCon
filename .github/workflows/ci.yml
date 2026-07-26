@@ -30,6 +30,60 @@ jobs:
         run: mypy backend/app/
         continue-on-error: true
 
+  analytics-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            analytics/requirements.txt
+            analytics/requirements-dev.txt
+      - name: Install dependencies
+        run: |
+          pip install -r analytics/requirements.txt -r analytics/requirements-dev.txt
+      - name: Ruff check
+        run: ruff check analytics/
+      - name: Ruff format check
+        run: ruff format --check analytics/
+      - name: Mypy
+        run: mypy analytics/app/
+
+  analytics-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: intellicon_test
+          POSTGRES_USER: intellicon
+          POSTGRES_PASSWORD: intellicon
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U intellicon"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            analytics/requirements.txt
+            analytics/requirements-dev.txt
+      - name: Install dependencies
+        run: pip install -r analytics/requirements.txt -r analytics/requirements-dev.txt
+      - name: Run tests
+        working-directory: analytics
+        env:
+          DATABASE_URL: postgresql://intellicon:intellicon@localhost:5432/intellicon_test
+        run: pytest tests/ -v
+
   backend-test:
     runs-on: ubuntu-latest
     services:
