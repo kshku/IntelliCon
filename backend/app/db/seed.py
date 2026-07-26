@@ -354,19 +354,19 @@ def seed_reference_data(session: Session) -> dict:
             session.add(chas)
 
     caste_ids: list[int] = []
-    for name in CASTES:
-        c = CasteMaster(caste_name=name)
-        session.add(c)
+    for caste_name in CASTES:
+        caste_obj = CasteMaster(caste_name=caste_name)
+        session.add(caste_obj)
         session.flush()
-        caste_ids.append(c.caste_id)
+        caste_ids.append(caste_obj.caste_id)
     data["caste_ids"] = caste_ids
 
     religion_ids: list[int] = []
-    for name in RELIGIONS:
-        r = ReligionMaster(religion_name=name)
-        session.add(r)
+    for religion_name in RELIGIONS:
+        religion_obj = ReligionMaster(religion_name=religion_name)
+        session.add(religion_obj)
         session.flush()
-        religion_ids.append(r.religion_id)
+        religion_ids.append(religion_obj.religion_id)
     data["religion_ids"] = religion_ids
 
     occupation_ids: list[int] = []
@@ -381,7 +381,7 @@ def seed_reference_data(session: Session) -> dict:
 
 
 def _pick_emp_id(ref: dict) -> int:
-    return random.choice(ref["emp_ids"])
+    return int(random.choice(ref["emp_ids"]))
 
 
 def _random_date(year: int, month: int, day: int, offset: int) -> str:

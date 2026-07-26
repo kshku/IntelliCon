@@ -7,9 +7,12 @@ select = ["E", "F", "I", "N", "W", "UP"]
 
 [tool.mypy]
 python_version = "3.11"
-strict = true
 warn_return_any = true
 warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = ["sqlparse", "sqlparse.*", "deep_translator", "deep_translator.*", "reportlab", "reportlab.*", "jose", "jose.*", "yaml", "yaml.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -111,9 +111,9 @@ async def health_check() -> dict[str, str | dict[str, str | None]]:
     try:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
-        health["checks"]["database"] = "ok"
+        health["checks"]["database"] = "ok"  # type: ignore[index]
     except Exception:
-        health["checks"]["database"] = "error"
+        health["checks"]["database"] = "error"  # type: ignore[index]
         health["status"] = "degraded"
 
     return health

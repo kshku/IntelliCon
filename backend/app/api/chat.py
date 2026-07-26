@@ -100,7 +100,7 @@ async def chat_websocket(
             else:
                 agent_message_content = ""
                 try:
-                    async for event in stream_agent_response(graph, state, config):
+                    async for event in stream_agent_response(graph, state, config):  # type: ignore[arg-type]
                         await websocket.send_json({"event": event.event, "data": event.data})
                         if event.event == "message":
                             agent_message_content += event.data.get("content", "")

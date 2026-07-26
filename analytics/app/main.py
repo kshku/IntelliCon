@@ -1,7 +1,7 @@
 import logging
 import traceback
 from collections.abc import Generator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -15,9 +15,7 @@ from app.db import SessionLocal, init_schema
 from app.models import JobExecutionLog
 from app.registry import get_registry
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
@@ -26,9 +24,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
-jobstores = {
-    "default": SQLAlchemyJobStore(url=settings.DATABASE_URL)
-}
+jobstores = {"default": SQLAlchemyJobStore(url=settings.DATABASE_URL)}
 scheduler = BackgroundScheduler(jobstores=jobstores)
 
 
@@ -36,7 +32,7 @@ def success_response(data, metadata=None):
     return {
         "success": True,
         "data": data,
-        "metadata": metadata or {"timestamp": datetime.now(timezone.utc).isoformat()},
+        "metadata": metadata or {"timestamp": datetime.now(UTC).isoformat()},
     }
 
 
@@ -61,7 +57,7 @@ def run_job(job_name: str) -> None:
     execution = JobExecutionLog(
         job_name=job_name,
         status="running",
-        started_at=datetime.now(timezone.utc),
+        started_at=datetime.now(UTC),
     )
     session.add(execution)
     session.commit()
@@ -75,7 +71,7 @@ def run_job(job_name: str) -> None:
         result = pipeline.run(session)
 
         execution.status = "completed"
-        execution.completed_at = datetime.now(timezone.utc)
+        execution.completed_at = datetime.now(UTC)
         execution.rows_processed = result.get("rows_processed", 0)
         execution.metadata_ = result
 
@@ -86,7 +82,7 @@ def run_job(job_name: str) -> None:
         )
     except Exception as e:
         execution.status = "failed"
-        execution.completed_at = datetime.now(timezone.utc)
+        execution.completed_at = datetime.now(UTC)
         execution.error_message = traceback.format_exc()
         session.commit()
         logger.error(f"Job '{job_name}' failed (execution_id={execution_id}): {e}")
@@ -183,15 +179,17 @@ class TriggerResponse(BaseModel):
 @app.get("/jobs")
 def list_jobs() -> dict:
     registry = get_registry()
-    return success_response([
-        JobResponse(
-            name=job_def.name,
-            description=job_def.description,
-            schedule=job_def.schedule,
-            schedule_kwargs=job_def.schedule_kwargs,
-        )
-        for job_def in registry.values()
-    ])
+    return success_response(
+        [
+            JobResponse(
+                name=job_def.name,
+                description=job_def.description,
+                schedule=job_def.schedule,
+                schedule_kwargs=job_def.schedule_kwargs,
+            )
+            for job_def in registry.values()
+        ]
+    )
 
 
 @app.get("/jobs/{job_name}")
@@ -200,12 +198,14 @@ def get_job(job_name: str) -> dict:
     if job_name not in registry:
         raise HTTPException(status_code=404, detail=f"Job '{job_name}' not found")
     job_def = registry[job_name]
-    return success_response(JobResponse(
-        name=job_def.name,
-        description=job_def.description,
-        schedule=job_def.schedule,
-        schedule_kwargs=job_def.schedule_kwargs,
-    ))
+    return success_response(
+        JobResponse(
+            name=job_def.name,
+            description=job_def.description,
+            schedule=job_def.schedule,
+            schedule_kwargs=job_def.schedule_kwargs,
+        )
+    )
 
 
 @app.post("/jobs/{job_name}/trigger")
@@ -216,19 +216,21 @@ def trigger_job(job_name: str) -> dict:
 
     scheduler.add_job(
         run_job,
-        id=f"{job_name}_manual_{datetime.now(timezone.utc).timestamp()}",
+        id=f"{job_name}_manual_{datetime.now(UTC).timestamp()}",
         name=f"{job_name}_manual",
         kwargs={"job_name": job_name},
         trigger="date",
-        run_date=datetime.now(timezone.utc),
+        run_date=datetime.now(UTC),
         replace_existing=False,
     )
 
-    return success_response(TriggerResponse(
-        status="triggered",
-        job_name=job_name,
-        message=f"Job '{job_name}' scheduled for immediate execution",
-    ))
+    return success_response(
+        TriggerResponse(
+            status="triggered",
+            job_name=job_name,
+            message=f"Job '{job_name}' scheduled for immediate execution",
+        )
+    )
 
 
 @app.get("/jobs/{job_name}/status")
@@ -241,18 +243,18 @@ def get_job_status(job_name: str, session: Session = Depends(get_session)) -> di
     )
 
     if not execution:
-        raise HTTPException(
-            status_code=404, detail=f"No executions found for job '{job_name}'"
-        )
+        raise HTTPException(status_code=404, detail=f"No executions found for job '{job_name}'")
 
-    return success_response({
-        "job_name": job_name,
-        "status": execution.status,
-        "execution_id": execution.id,
-        "started_at": execution.started_at.isoformat() if execution.started_at else None,
-        "completed_at": execution.completed_at.isoformat() if execution.completed_at else None,
-        "next_run_time": None,
-    })
+    return success_response(
+        {
+            "job_name": job_name,
+            "status": execution.status,
+            "execution_id": execution.id,
+            "started_at": execution.started_at.isoformat() if execution.started_at else None,
+            "completed_at": execution.completed_at.isoformat() if execution.completed_at else None,
+            "next_run_time": None,
+        }
+    )
 
 
 @app.get("/executions")
@@ -266,41 +268,39 @@ def list_executions(
         query = query.filter(JobExecutionLog.job_name == job_name)
     executions = query.order_by(JobExecutionLog.started_at.desc()).limit(limit).all()
 
-    return success_response([
-        ExecutionResponse(
-            id=ex.id,
-            job_name=ex.job_name,
-            status=ex.status,
-            started_at=ex.started_at,
-            completed_at=ex.completed_at,
-            rows_processed=ex.rows_processed,
-            error_message=ex.error_message,
-            metadata=ex.metadata_,
-        )
-        for ex in executions
-    ])
+    return success_response(
+        [
+            ExecutionResponse(
+                id=ex.id,
+                job_name=ex.job_name,
+                status=ex.status,
+                started_at=ex.started_at,
+                completed_at=ex.completed_at,
+                rows_processed=ex.rows_processed,
+                error_message=ex.error_message,
+                metadata=ex.metadata_,
+            )
+            for ex in executions
+        ]
+    )
 
 
 @app.get("/executions/{execution_id}")
 def get_execution(execution_id: int, session: Session = Depends(get_session)) -> dict:
-    execution = (
-        session.query(JobExecutionLog)
-        .filter(JobExecutionLog.id == execution_id)
-        .first()
-    )
+    execution = session.query(JobExecutionLog).filter(JobExecutionLog.id == execution_id).first()
 
     if not execution:
-        raise HTTPException(
-            status_code=404, detail=f"Execution {execution_id} not found"
-        )
+        raise HTTPException(status_code=404, detail=f"Execution {execution_id} not found")
 
-    return success_response(ExecutionResponse(
-        id=execution.id,
-        job_name=execution.job_name,
-        status=execution.status,
-        started_at=execution.started_at,
-        completed_at=execution.completed_at,
-        rows_processed=execution.rows_processed,
-        error_message=execution.error_message,
-        metadata=execution.metadata_,
-    ))
+    return success_response(
+        ExecutionResponse(
+            id=execution.id,
+            job_name=execution.job_name,
+            status=execution.status,
+            started_at=execution.started_at,
+            completed_at=execution.completed_at,
+            rows_processed=execution.rows_processed,
+            error_message=execution.error_message,
+            metadata=execution.metadata_,
+        )
+    )

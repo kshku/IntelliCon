@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
+
+if TYPE_CHECKING:
+    from sqlalchemy.engine import Row
 
 from app.config import settings
 from app.tools.base import ToolResult
@@ -89,7 +93,8 @@ class SqlQueryTool:
             HumanMessage(content=question),
         ]
         response = await llm.ainvoke(messages)
-        sql = response.content.strip()
+        sql = response.content if isinstance(response.content, str) else str(response.content)
+        sql = sql.strip()
         sql = sql.removeprefix("```sql").removesuffix("```").strip()
         return sql
 
@@ -129,7 +134,7 @@ class SqlQueryTool:
             },
         )
 
-    def _format_results(self, columns: list[str], rows: list[tuple[Any, ...]]) -> str:
+    def _format_results(self, columns: list[str], rows: Sequence[Row[Any]]) -> str:
         if not rows:
             return "No results found."
 
