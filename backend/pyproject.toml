@@ -12,7 +12,7 @@ warn_return_any = true
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-module = ["sqlparse.*", "deep_translator.*", "reportlab.*", "jose.*", "yaml.*"]
+module = ["sqlparse", "sqlparse.*", "deep_translator", "deep_translator.*", "reportlab", "reportlab.*", "jose", "jose.*", "yaml", "yaml.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
