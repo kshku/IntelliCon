@@ -28,7 +28,6 @@ jobs:
         run: ruff format --check backend/
       - name: Mypy
         run: mypy backend/app/
-        continue-on-error: true
 
   analytics-lint:
     runs-on: ubuntu-latest
