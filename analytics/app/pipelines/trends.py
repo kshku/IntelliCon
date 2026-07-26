@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import logging
-from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import text
@@ -63,14 +62,20 @@ def _monthly_counts(session: Session) -> list[dict]:
     results = []
     for r in rows:
         month, district, crime_type, category, cnt = r[0], r[1], r[2], r[3], r[4]
-        for dim, val in [("district", district), ("crime_head", crime_type), ("category", category)]:
-            results.append({
-                "metric_type": "monthly_count",
-                "dimension": dim,
-                "dimension_value": val,
-                "period_date": month,
-                "value": float(cnt),
-            })
+        for dim, val in [
+            ("district", district),
+            ("crime_head", crime_type),
+            ("category", category),
+        ]:
+            results.append(
+                {
+                    "metric_type": "monthly_count",
+                    "dimension": dim,
+                    "dimension_value": val,
+                    "period_date": month,
+                    "value": float(cnt),
+                }
+            )
 
     return results
 
@@ -107,13 +112,15 @@ def _yoy_comparison(session: Session) -> list[dict]:
             yoy_pct = ((this_year - last_year) / last_year) * 100
         else:
             yoy_pct = 0.0
-        results.append({
-            "metric_type": "yoy_comparison",
-            "dimension": "district",
-            "dimension_value": district,
-            "period_date": month,
-            "value": round(yoy_pct, 2),
-        })
+        results.append(
+            {
+                "metric_type": "yoy_comparison",
+                "dimension": "district",
+                "dimension_value": district,
+                "period_date": month,
+                "value": round(yoy_pct, 2),
+            }
+        )
 
     return results
 
@@ -140,13 +147,15 @@ def _moving_averages(session: Session, window: int) -> list[dict]:
 
     for i in range(window - 1, len(counts)):
         avg = sum(counts[i - window + 1 : i + 1]) / window
-        results.append({
-            "metric_type": metric,
-            "dimension": "total",
-            "dimension_value": "all_crimes",
-            "period_date": months[i],
-            "value": round(avg, 2),
-        })
+        results.append(
+            {
+                "metric_type": metric,
+                "dimension": "total",
+                "dimension_value": "all_crimes",
+                "period_date": months[i],
+                "value": round(avg, 2),
+            }
+        )
 
     return results
 
@@ -175,13 +184,15 @@ def _chargesheet_rates(session: Session) -> list[dict]:
     for r in rows:
         month, district, total, chargesheet = r[0], r[1], r[2], r[3]
         rate = (chargesheet / total * 100) if total > 0 else 0.0
-        results.append({
-            "metric_type": "chargesheet_rate",
-            "dimension": "district",
-            "dimension_value": district,
-            "period_date": month,
-            "value": round(rate, 2),
-        })
+        results.append(
+            {
+                "metric_type": "chargesheet_rate",
+                "dimension": "district",
+                "dimension_value": district,
+                "period_date": month,
+                "value": round(rate, 2),
+            }
+        )
 
     return results
 

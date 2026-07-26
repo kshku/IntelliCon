@@ -89,7 +89,8 @@ class SqlQueryTool:
             HumanMessage(content=question),
         ]
         response = await llm.ainvoke(messages)
-        sql = response.content.strip()
+        sql = response.content if isinstance(response.content, str) else str(response.content)
+        sql = sql.strip()
         sql = sql.removeprefix("```sql").removesuffix("```").strip()
         return sql
 
@@ -116,7 +117,7 @@ class SqlQueryTool:
             columns = list(result.keys())
 
         truncated = len(rows) >= max_rows and needs_limit
-        formatted = self._format_results(columns, rows)
+        formatted = self._format_results(columns, list(rows))
 
         return ToolResult(
             success=True,

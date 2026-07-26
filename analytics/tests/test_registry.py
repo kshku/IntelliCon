@@ -2,7 +2,9 @@ from app.registry import JobDefinition, get_registry, register_job
 
 
 def test_register_job_adds_to_registry():
-    @register_job("test_job", schedule="cron", hour=10, minute=0, description="Test job")
+    @register_job(
+        "test_job", schedule="cron", hour=10, minute=0, description="Test job"
+    )
     class TestPipeline:
         name = "test_job"
         description = "Test job"

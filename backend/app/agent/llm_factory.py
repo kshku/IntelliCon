@@ -13,14 +13,14 @@ def get_llm() -> BaseChatModel:
     if provider == "openai":
         from langchain_openai import ChatOpenAI
 
-        return ChatOpenAI(model=model, api_key=api_key)
+        return ChatOpenAI(model=model, api_key=api_key)  # type: ignore[arg-type]
     if provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
 
-        return ChatAnthropic(model=model, api_key=api_key)
+        return ChatAnthropic(model=model, api_key=api_key)  # type: ignore[arg-type, call-arg]
     if provider == "gemini":
         from langchain_google_genai import ChatGoogleGenerativeAI
 
-        return ChatGoogleGenerativeAI(model=model, google_api_key=api_key)
+        return ChatGoogleGenerativeAI(model=model, google_api_key=api_key)  # type: ignore[call-arg]
 
     raise ValueError(f"Unknown LLM provider: {provider!r}. Supported: openai, anthropic, gemini")
