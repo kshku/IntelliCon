@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
+from app.models import Base
 
 
 @pytest.fixture(scope="session")
@@ -16,12 +17,14 @@ def engine():
 
 @pytest.fixture(scope="session")
 def schema(engine):
-    """Create a test schema, yield it, then drop it."""
-    schema_name = "analytics_test"
+    """Create the analytics schema, create tables, yield, then drop it."""
+    schema_name = "analytics"
     with engine.connect() as conn:
         conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema_name}"))
         conn.commit()
+    Base.metadata.create_all(engine, schema=schema_name)
     yield schema_name
+    Base.metadata.drop_all(engine, schema=schema_name)
     with engine.connect() as conn:
         conn.execute(text(f"DROP SCHEMA IF EXISTS {schema_name} CASCADE"))
         conn.commit()

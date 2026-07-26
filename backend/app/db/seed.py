@@ -381,7 +381,7 @@ def seed_reference_data(session: Session) -> dict:
 
 
 def _pick_emp_id(ref: dict) -> int:
-    return random.choice(ref["emp_ids"])
+    return int(random.choice(ref["emp_ids"]))
 
 
 def _random_date(year: int, month: int, day: int, offset: int) -> str:

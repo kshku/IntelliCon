@@ -32,7 +32,7 @@ async def stream_agent_response(
     step_start: float | None = None
 
     try:
-        async for event in graph.astream_events(initial_state, config or {}, version="v2"):  # type: ignore[arg-type]
+        async for event in graph.astream_events(initial_state, config or {}, version="v2"):  # type: ignore[call-overload]
             kind = event.get("event", "")
             if kind == "on_chat_model_stream":
                 chunk = event.get("data", {}).get("chunk")
