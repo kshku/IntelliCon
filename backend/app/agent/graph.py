@@ -18,7 +18,7 @@ def _agent_node(llm: BaseChatModel, tools: Sequence[Any] | None = None) -> Calla
         system_prompt = get_system_prompt()
         messages = [SystemMessage(content=system_prompt)] + list(state["messages"])
 
-        _tools: Sequence[Any] = []
+        _tools = tools if tools is not None else state.get("tools", [])
         response = await llm.bind_tools(_tools).ainvoke(messages)  # type: ignore[arg-type]
         return {
             "messages": [response],
