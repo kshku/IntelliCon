@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any
+from collections.abc import Sequence
+from typing import Any, TYPE_CHECKING
 
 from langchain_core.messages import HumanMessage, SystemMessage
+
+if TYPE_CHECKING:
+    from sqlalchemy.engine import Row
 
 from app.config import settings
 from app.tools.base import ToolResult
@@ -117,7 +121,7 @@ class SqlQueryTool:
             columns = list(result.keys())
 
         truncated = len(rows) >= max_rows and needs_limit
-        formatted = self._format_results(columns, list(rows))
+        formatted = self._format_results(columns, rows)
 
         return ToolResult(
             success=True,
@@ -130,7 +134,7 @@ class SqlQueryTool:
             },
         )
 
-    def _format_results(self, columns: list[str], rows: list[tuple[Any, ...]]) -> str:
+    def _format_results(self, columns: list[str], rows: Sequence[Row[Any]]) -> str:
         if not rows:
             return "No results found."
 
