@@ -37,6 +37,13 @@ async def stream_agent_response(
     try:
         async for event in graph.astream_events(initial_state, config or {}, version="v2"):  # type: ignore[arg-type,call-overload]
             kind = event.get("event", "")
+            metadata = event.get("metadata", {})
+            
+            # Filter out sub-LLM calls (e.g. SQL generator) made inside tools
+            if kind.startswith("on_chat_model_"):
+                if metadata.get("langgraph_node") != "agent":
+                    continue
+
             if kind == "on_chat_model_start":
                 run_id = event.get("run_id")
                 if run_id:
