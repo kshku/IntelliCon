@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Integer, String
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -26,7 +26,7 @@ class District(Base):
 
     district_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     district_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    state_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    state_id: Mapped[int] = mapped_column(Integer, ForeignKey("state.state_id"), nullable=False)
 
     state: Mapped[State] = relationship(back_populates="districts")
     units: Mapped[list[Unit]] = relationship(back_populates="district")
@@ -38,7 +38,7 @@ class Unit(Base):
     unit_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     unit_name: Mapped[str] = mapped_column(String(150), nullable=False)
     unit_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    district_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    district_id: Mapped[int] = mapped_column(Integer, ForeignKey("district.district_id"), nullable=False)
 
     district: Mapped[District] = relationship(back_populates="units")
     employees: Mapped[list[Employee]] = relationship(back_populates="unit")

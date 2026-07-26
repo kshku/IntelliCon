@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Integer, String
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -36,9 +36,9 @@ class Employee(Base):
     employee_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     badge_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    rank_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    designation_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    unit_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rank_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("rank.rank_id"), nullable=True)
+    designation_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("designation.designation_id"), nullable=True)
+    unit_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("unit.unit_id"), nullable=True)
 
     rank: Mapped[Rank | None] = relationship(back_populates="employees")
     designation: Mapped[Designation | None] = relationship(back_populates="employees")
