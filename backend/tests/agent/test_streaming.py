@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 from app.agent.streaming import SSEEvent, stream_agent_response
 
@@ -29,17 +29,13 @@ class TestSSEEvent:
 
 class TestStreamAgentResponse:
     async def test_yields_done_event(self) -> None:
-        mock_compiled = MagicMock()
-        mock_compiled.astream_events = AsyncMock()
+        mock_graph = MagicMock()
 
         async def empty_stream(*args, **kwargs):
             return
             yield  # noqa: B029
 
-        mock_compiled.astream_events = empty_stream
-
-        mock_graph = MagicMock()
-        mock_graph.compile.return_value = mock_compiled
+        mock_graph.astream_events = empty_stream
 
         events = []
         async for event in stream_agent_response(mock_graph, {"messages": []}):
@@ -49,16 +45,13 @@ class TestStreamAgentResponse:
         assert events[0].event == "done"
 
     async def test_yields_error_on_exception(self) -> None:
-        mock_compiled = MagicMock()
+        mock_graph = MagicMock()
 
         async def failing_stream(*args, **kwargs):
             raise RuntimeError("test error")
             yield  # noqa: B029
 
-        mock_compiled.astream_events = failing_stream
-
-        mock_graph = MagicMock()
-        mock_graph.compile.return_value = mock_compiled
+        mock_graph.astream_events = failing_stream
 
         events = []
         async for event in stream_agent_response(mock_graph, {"messages": []}):
