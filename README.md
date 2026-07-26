@@ -275,6 +275,7 @@ Key environment variables (see `.env.example` for full list):
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `ENVIRONMENT` | Runtime mode (`development`, `production`, `testing`) | `development` |
 | `JWT_SECRET_KEY` | HMAC key for JWT signing | — (required) |
 | `LLM_PROVIDER` | LLM provider (`openai`, `anthropic`, `gemini`) | `openai` |
 | `LLM_MODEL` | Model name | `gpt-4o` |
@@ -285,6 +286,61 @@ Key environment variables (see `.env.example` for full list):
 | `DATABASE_URL` | PostgreSQL connection string | — (set by compose) |
 | `NEO4J_URI` | Neo4j connection URI | `bolt://localhost:7687` |
 | `REDIS_URL` | Redis connection string | — (set by compose) |
+
+## Production Configuration
+
+IntelliCon validates configuration at startup when `ENVIRONMENT=production`. This ensures insecure defaults are rejected before the application serves traffic.
+
+### Required Production Settings
+
+| Setting | Description | Validation |
+|---------|-------------|------------|
+| `ENVIRONMENT` | Must be `production` | Enables validation |
+| `JWT_SECRET_KEY` | Secret for JWT signing | Min 32 characters, not default |
+| `LLM_API_KEY` | API key for LLM provider | Must be set |
+| `CORS_ORIGINS` | Allowed origins | No localhost/127.0.0.1 |
+| `DATABASE_URL` | PostgreSQL connection | No default credentials |
+
+### Secret Management
+
+1. **Generate secrets:**
+   ```bash
+   python -c "import secrets; print(secrets.token_hex(32))"
+   ```
+
+2. **Use environment variables or secret manager** (AWS Secrets Manager, HashiCorp Vault, etc.)
+
+3. **Never commit secrets** to version control
+
+4. **Rotate secrets** regularly in production
+
+### Production Deployment
+
+```bash
+# 1. Copy and configure production template
+cp .env.production.example .env
+
+# 2. Generate and set secrets
+export JWT_SECRET_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
+export POSTGRES_PASSWORD=$(python -c "import secrets; print(secrets.token_hex(16))")
+# ... set other passwords
+
+# 3. Start services
+docker compose up -d
+```
+
+### Validation Errors
+
+If startup fails with configuration errors, the application will log the specific issues:
+
+```
+Production configuration invalid:
+  - JWT_SECRET_KEY must be changed from default placeholder
+  - LLM_API_KEY must be set to a valid API key
+  - CORS_ORIGINS must not contain localhost in production
+```
+
+Fix each issue and restart the application.
 
 ## Development
 
