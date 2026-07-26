@@ -38,7 +38,9 @@ class Unit(Base):
     unit_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     unit_name: Mapped[str] = mapped_column(String(150), nullable=False)
     unit_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    district_id: Mapped[int] = mapped_column(Integer, ForeignKey("district.district_id"), nullable=False)
+    district_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("district.district_id"), nullable=False
+    )
 
     district: Mapped[District] = relationship(back_populates="units")
     employees: Mapped[list[Employee]] = relationship(back_populates="unit")

@@ -37,7 +37,9 @@ class Employee(Base):
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     badge_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
     rank_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("rank.rank_id"), nullable=True)
-    designation_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("designation.designation_id"), nullable=True)
+    designation_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("designation.designation_id"), nullable=True
+    )
     unit_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("unit.unit_id"), nullable=True)
 
     rank: Mapped[Rank | None] = relationship(back_populates="employees")
