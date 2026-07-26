@@ -32,7 +32,7 @@ async def stream_agent_response(
     step_start: float | None = None
 
     try:
-        async for event in graph.astream_events(initial_state, config or {}, version="v2"):
+        async for event in graph.astream_events(initial_state, config or {}, version="v2"):  # type: ignore[arg-type]
             kind = event.get("event", "")
             if kind == "on_chat_model_stream":
                 chunk = event.get("data", {}).get("chunk")
@@ -45,7 +45,7 @@ async def stream_agent_response(
                         user_id=user_id,
                         step_number=step_counter,
                         step_type="reasoning",
-                        content=content,
+                        content=content if isinstance(content, str) else str(content),
                     )
                     yield SSEEvent(event="reasoning", data={"content": content})
             elif kind == "on_tool_start":

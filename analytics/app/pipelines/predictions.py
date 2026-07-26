@@ -30,7 +30,9 @@ def _crime_forecast(session: Session) -> list[dict]:
     ).fetchall()
 
     if len(rows) < 3:
-        logger.warning("Not enough historical data for crime forecast (need >= 3 months)")
+        logger.warning(
+            "Not enough historical data for crime forecast (need >= 3 months)"
+        )
         return []
 
     months = np.arange(len(rows), dtype=float)
@@ -79,7 +81,7 @@ def _recidivism_scoring(session: Session) -> list[dict]:
 
     predictions = []
     for row in rows:
-        accused_id, name, case_count = row[0], row[1], row[2]
+        accused_id, _, case_count = row[0], row[1], row[2]
         if case_count <= 1:
             risk = 0.1
         elif case_count <= 3:
@@ -119,7 +121,7 @@ def _resolution_time(session: Session) -> list[dict]:
 
     predictions = []
     for row in rows:
-        cat_id, cat_name, avg_days, sample_size = row[0], row[1], row[2] or 0, row[3]
+        cat_id, _, avg_days, sample_size = row[0], row[1], row[2] or 0, row[3]
         confidence = min(0.95, sample_size / (sample_size + 10))
 
         predictions.append(

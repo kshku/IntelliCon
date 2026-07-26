@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-import numpy as np
 
 from app.pipelines.predictions import (
     PredictiveAnalyticsPipeline,
@@ -107,8 +106,20 @@ def test_seasonal_patterns_all_months():
 
 
 def test_seasonal_patterns_spike_detection():
-    rows = [(1, 10), (2, 10), (3, 10), (4, 10), (5, 10), (6, 100),
-            (7, 10), (8, 10), (9, 10), (10, 10), (11, 10), (12, 10)]
+    rows = [
+        (1, 10),
+        (2, 10),
+        (3, 10),
+        (4, 10),
+        (5, 10),
+        (6, 100),
+        (7, 10),
+        (8, 10),
+        (9, 10),
+        (10, 10),
+        (11, 10),
+        (12, 10),
+    ]
     session = _make_session(rows)
     preds = _seasonal_patterns(session)
     june = next(p for p in preds if p["entity_id"] == 6)
@@ -118,13 +129,25 @@ def test_seasonal_patterns_spike_detection():
 
 def test_pipeline_run():
     session = MagicMock()
-    with patch("app.pipelines.predictions._crime_forecast", return_value=[
-        {"prediction_type": "crime_forecast", "entity_type": "district",
-         "entity_id": None, "prediction_value": 100.0, "confidence": 0.8,
-         "period_date": datetime.now(timezone.utc), "model_version": "v1.0"}
-    ]), patch("app.pipelines.predictions._recidivism_scoring", return_value=[]), \
-         patch("app.pipelines.predictions._resolution_time", return_value=[]), \
-         patch("app.pipelines.predictions._seasonal_patterns", return_value=[]):
+    with (
+        patch(
+            "app.pipelines.predictions._crime_forecast",
+            return_value=[
+                {
+                    "prediction_type": "crime_forecast",
+                    "entity_type": "district",
+                    "entity_id": None,
+                    "prediction_value": 100.0,
+                    "confidence": 0.8,
+                    "period_date": datetime.now(timezone.utc),
+                    "model_version": "v1.0",
+                }
+            ],
+        ),
+        patch("app.pipelines.predictions._recidivism_scoring", return_value=[]),
+        patch("app.pipelines.predictions._resolution_time", return_value=[]),
+        patch("app.pipelines.predictions._seasonal_patterns", return_value=[]),
+    ):
         pipeline = PredictiveAnalyticsPipeline()
         result = pipeline.run(session)
         assert result["rows_processed"] == 1

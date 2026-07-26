@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 from app.pipelines.trends import (
@@ -163,12 +163,23 @@ def test_chargesheet_rates_zero_cases():
 
 def test_pipeline_run():
     session = MagicMock()
-    with patch("app.pipelines.trends._monthly_counts", return_value=[
-        {"metric_type": "monthly_count", "dimension": "district",
-         "dimension_value": "Mangaluru", "period_date": datetime(2026, 1, 1), "value": 100.0}
-    ]), patch("app.pipelines.trends._yoy_comparison", return_value=[]), \
-         patch("app.pipelines.trends._moving_averages", return_value=[]), \
-         patch("app.pipelines.trends._chargesheet_rates", return_value=[]):
+    with (
+        patch(
+            "app.pipelines.trends._monthly_counts",
+            return_value=[
+                {
+                    "metric_type": "monthly_count",
+                    "dimension": "district",
+                    "dimension_value": "Mangaluru",
+                    "period_date": datetime(2026, 1, 1),
+                    "value": 100.0,
+                }
+            ],
+        ),
+        patch("app.pipelines.trends._yoy_comparison", return_value=[]),
+        patch("app.pipelines.trends._moving_averages", return_value=[]),
+        patch("app.pipelines.trends._chargesheet_rates", return_value=[]),
+    ):
         pipeline = TrendAnalysisPipeline()
         result = pipeline.run(session)
         assert result["rows_processed"] == 1
@@ -179,16 +190,41 @@ def test_pipeline_run():
 
 def test_pipeline_run_mixed_results():
     session = MagicMock()
-    with patch("app.pipelines.trends._monthly_counts", return_value=[
-        {"metric_type": "monthly_count", "dimension": "district",
-         "dimension_value": "A", "period_date": datetime(2026, 1, 1), "value": 10.0},
-        {"metric_type": "monthly_count", "dimension": "crime_head",
-         "dimension_value": "B", "period_date": datetime(2026, 1, 1), "value": 20.0},
-    ]), patch("app.pipelines.trends._yoy_comparison", return_value=[
-        {"metric_type": "yoy_comparison", "dimension": "district",
-         "dimension_value": "A", "period_date": datetime(2026, 1, 1), "value": 5.0},
-    ]), patch("app.pipelines.trends._moving_averages", return_value=[]), \
-         patch("app.pipelines.trends._chargesheet_rates", return_value=[]):
+    with (
+        patch(
+            "app.pipelines.trends._monthly_counts",
+            return_value=[
+                {
+                    "metric_type": "monthly_count",
+                    "dimension": "district",
+                    "dimension_value": "A",
+                    "period_date": datetime(2026, 1, 1),
+                    "value": 10.0,
+                },
+                {
+                    "metric_type": "monthly_count",
+                    "dimension": "crime_head",
+                    "dimension_value": "B",
+                    "period_date": datetime(2026, 1, 1),
+                    "value": 20.0,
+                },
+            ],
+        ),
+        patch(
+            "app.pipelines.trends._yoy_comparison",
+            return_value=[
+                {
+                    "metric_type": "yoy_comparison",
+                    "dimension": "district",
+                    "dimension_value": "A",
+                    "period_date": datetime(2026, 1, 1),
+                    "value": 5.0,
+                },
+            ],
+        ),
+        patch("app.pipelines.trends._moving_averages", return_value=[]),
+        patch("app.pipelines.trends._chargesheet_rates", return_value=[]),
+    ):
         pipeline = TrendAnalysisPipeline()
         result = pipeline.run(session)
         assert result["rows_processed"] == 3
