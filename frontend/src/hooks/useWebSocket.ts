@@ -150,10 +150,17 @@ export const useWebSocket = () => {
 
     setStreaming(true);
 
+    const storedProvider = localStorage.getItem('intellicon_llm_provider') || 'openai';
+    const storedModel = localStorage.getItem('intellicon_llm_model') || 'gpt-4o';
+    const storedApiKey = localStorage.getItem('intellicon_api_key') || '';
+
     // Send payload to backend
     socketRef.current.send(JSON.stringify({
       message: text,
       session_id: sessionId,
+      llm_provider: storedProvider,
+      llm_model: storedModel,
+      api_key: storedApiKey,
     }));
   }, [sessionId, addMessage, setStreaming, connect]);
 
