@@ -1,4 +1,5 @@
 """Production configuration validator."""
+
 from app.config import Settings
 
 
@@ -25,8 +26,7 @@ def validate_production_config(settings: Settings) -> list[str]:
 
     # Validate CORS origins
     has_localhost = any(
-        "localhost" in origin or "127.0.0.1" in origin
-        for origin in settings.CORS_ORIGINS
+        "localhost" in origin or "127.0.0.1" in origin for origin in settings.CORS_ORIGINS
     )
     if has_localhost:
         errors.append("CORS_ORIGINS must not contain localhost in production")

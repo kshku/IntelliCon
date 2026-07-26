@@ -1,7 +1,7 @@
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
 
 
 def test_startup_fails_with_invalid_production_config():
@@ -13,9 +13,7 @@ def test_startup_fails_with_invalid_production_config():
     mock_settings.JWT_SECRET_KEY = "short"
     mock_settings.LLM_API_KEY = ""
     mock_settings.CORS_ORIGINS = ["http://localhost:3000"]
-    mock_settings.DATABASE_URL = (
-        "postgresql://intellicon:intellicon@localhost:5432/intellicon"
-    )
+    mock_settings.DATABASE_URL = "postgresql://intellicon:intellicon@localhost:5432/intellicon"
 
     with (
         patch("app.main.settings", mock_settings),
@@ -48,9 +46,7 @@ def test_startup_skips_validation_in_development():
     mock_settings.JWT_SECRET_KEY = "a-valid-secret-key-for-development-mode"
     mock_settings.LLM_API_KEY = ""
     mock_settings.CORS_ORIGINS = ["http://localhost:3000"]
-    mock_settings.DATABASE_URL = (
-        "postgresql://intellicon:intellicon@localhost:5432/intellicon"
-    )
+    mock_settings.DATABASE_URL = "postgresql://intellicon:intellicon@localhost:5432/intellicon"
 
     mock_engine = AsyncMock()
 
