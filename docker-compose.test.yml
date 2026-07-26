@@ -48,7 +48,7 @@ services:
       DATABASE_URL: postgresql://intellicon:testpass@postgres:5432/intellicon
       REDIS_URL: redis://:testpass@redis:6379/0
     healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; r = httpx.get('http://localhost:8001/health'); exit(0 if r.status_code == 200 else 1)"]
+      test: ["CMD", "python", "-c", "import urllib.request; r = urllib.request.urlopen('http://localhost:8001/health'); exit(0 if r.status == 200 else 1)"]
       interval: 10s
       timeout: 5s
       retries: 5
