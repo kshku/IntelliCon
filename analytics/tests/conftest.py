@@ -22,9 +22,9 @@ def schema(engine):
     with engine.connect() as conn:
         conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema_name}"))
         conn.commit()
-    Base.metadata.create_all(engine, schema=schema_name)
+    Base.metadata.create_all(engine)
     yield schema_name
-    Base.metadata.drop_all(engine, schema=schema_name)
+    Base.metadata.drop_all(engine)
     with engine.connect() as conn:
         conn.execute(text(f"DROP SCHEMA IF EXISTS {schema_name} CASCADE"))
         conn.commit()
