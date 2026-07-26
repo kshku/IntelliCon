@@ -80,8 +80,6 @@ services:
 
   frontend:
     build: ./frontend
-    ports:
-      - "3000:3000"
     networks:
       - app
     depends_on:
@@ -89,6 +87,25 @@ services:
         condition: service_healthy
     volumes:
       - ./frontend/src:/app/src
+    restart: unless-stopped
+
+  caddy:
+    build: ./caddy
+    container_name: intellicon-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+      - ACME_EMAIL=${ACME_EMAIL:-}
+    depends_on:
+      - frontend
+    networks:
+      - app
     restart: unless-stopped
 
   analytics:
@@ -119,3 +136,5 @@ volumes:
   neo4j_data:
   neo4j_logs:
   redis_data:
+  caddy_data:
+  caddy_config:
