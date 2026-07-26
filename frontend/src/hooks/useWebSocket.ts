@@ -6,12 +6,16 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 const MAX_RECONNECT_INTERVAL = 30000;
 
 const getWsUrl = () => {
+  const token = localStorage.getItem('token') || '';
   const loc = window.location;
+  let baseUrl = '';
   if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') {
-    return 'ws://localhost:8000/api/chat/ws';
+    baseUrl = 'ws://localhost:8000/api/chat/ws';
+  } else {
+    const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+    baseUrl = `${proto}//${loc.host}/api/chat/ws`;
   }
-  const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${proto}//${loc.host}/api/chat/ws`;
+  return token ? `${baseUrl}?token=${encodeURIComponent(token)}` : baseUrl;
 };
 
 export const useWebSocket = () => {

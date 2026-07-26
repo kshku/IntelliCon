@@ -10,9 +10,11 @@ def get_llm(
     model: str | None = None,
     api_key: str | None = None,
 ) -> BaseChatModel:
-    provider = (provider or settings.LLM_PROVIDER).lower()
+    provider = (provider or settings.LLM_PROVIDER).lower().strip()
     api_key = api_key or settings.LLM_API_KEY or "mock-key"
-    model = model or settings.LLM_MODEL
+    if isinstance(api_key, str):
+        api_key = api_key.strip()
+    model = (model or settings.LLM_MODEL).strip()
 
     if provider == "openai":
         from langchain_openai import ChatOpenAI
