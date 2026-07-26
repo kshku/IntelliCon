@@ -5,10 +5,14 @@ from langchain_core.language_models import BaseChatModel
 from app.config import settings
 
 
-def get_llm() -> BaseChatModel:
-    provider = settings.LLM_PROVIDER.lower()
-    api_key = settings.LLM_API_KEY or "mock-key"
-    model = settings.LLM_MODEL
+def get_llm(
+    provider: str | None = None,
+    model: str | None = None,
+    api_key: str | None = None,
+) -> BaseChatModel:
+    provider = (provider or settings.LLM_PROVIDER).lower()
+    api_key = api_key or settings.LLM_API_KEY or "mock-key"
+    model = model or settings.LLM_MODEL
 
     if provider == "openai":
         from langchain_openai import ChatOpenAI

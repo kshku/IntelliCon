@@ -52,6 +52,9 @@ async def chat_websocket(
 
             user_msg = payload.get("message")
             session_id = payload.get("session_id", "default-session")
+            llm_provider = payload.get("llm_provider")
+            llm_model = payload.get("llm_model")
+            api_key = payload.get("api_key")
 
             if not user_msg:
                 await websocket.send_json({"event": "error", "data": {"error": "Empty message"}})
@@ -73,9 +76,10 @@ async def chat_websocket(
 
             config = {"configurable": {"thread_id": session_id}}
 
-            # Check if LLM_API_KEY is provided
-            if not settings.LLM_API_KEY:
-                logger.warning("LLM_API_KEY is empty. Running in mock streaming fallback mode.")
+            # Check if LLM API key is provided (either from frontend override or backend settings)
+            active_api_key = api_key or settings.LLM_API_KEY
+            if not active_api_key:
+                logger.warning("No LLM API key provided. Running in mock streaming fallback mode.")
 
                 # Custom mock agent streaming
                 mock_text = (
@@ -100,7 +104,19 @@ async def chat_websocket(
             else:
                 agent_message_content = ""
                 try:
-                    async for event in stream_agent_response(graph, state, config):  # type: ignore[arg-type]
+                    active_provider = llm_provider or settings.LLM_PROVIDER
+                    active_model = llm_model or settings.LLM_MODEL
+                    current_graph, _ = create_agent(
+                        provider=active_provider,
+                        model=active_model,
+                        api_key=active_api_key,
+                    )
+                    async for event in stream_agent_response(
+                        current_graph,
+                        state,  # type: ignore[arg-type]
+                        config,
+                        session_id=session_id,
+                    ):
                         await websocket.send_json({"event": event.event, "data": event.data})
                         if event.event == "message":
                             agent_message_content += event.data.get("content", "")
