@@ -216,6 +216,8 @@ docker compose up
 # - Neo4j Browser: http://localhost:7474
 ```
 
+Database migrations run automatically on backend startup. The backend will not report as healthy until all migrations are complete.
+
 ### Configuration
 
 Key environment variables (see `.env.example` for full list):
