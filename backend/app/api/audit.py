@@ -5,8 +5,10 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth import get_current_user
 from app.db.session import get_session
 from app.models.audit import AuditTrail
+from app.models.user import User
 
 router = APIRouter(prefix="/audit", tags=["audit"])
 
@@ -31,6 +33,7 @@ class AuditStepResponse(BaseModel):
 async def get_audit_trail(
     session_id: str,
     limit: int = Query(50, ge=1, le=500),
+    _user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
     result = await session.execute(

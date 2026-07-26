@@ -4,11 +4,12 @@ import asyncio
 import json
 import logging
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 from langchain_core.messages import AIMessage, HumanMessage
 
 from app.agent import create_agent
 from app.agent.streaming import stream_agent_response
+from app.auth import decode_access_token
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -20,12 +21,20 @@ graph, session_manager = create_agent()
 
 
 @router.websocket("/ws")
-async def chat_websocket(websocket: WebSocket) -> None:
-    """
-    WebSocket endpoint for real-time bidirectional chat streaming.
-    Receives JSON messages: {"message": "prompt", "session_id": "session-id"}
-    Sends JSON events: {"event": "message"|"tool_call"|"tool_result"|"done"|"error", "data": {...}}
-    """
+async def chat_websocket(
+    websocket: WebSocket,
+    token: str | None = Query(default=None),
+) -> None:
+    if not token:
+        await websocket.close(code=4001, reason="Authentication required")
+        return
+
+    try:
+        decode_access_token(token)
+    except Exception:
+        await websocket.close(code=4001, reason="Invalid token")
+        return
+
     await websocket.accept()
     logger.info("WebSocket connection established")
 
@@ -102,7 +111,7 @@ async def chat_websocket(websocket: WebSocket) -> None:
                 except Exception as exc:
                     logger.error("Error during agent flow: %s", exc, exc_info=True)
                     await websocket.send_json(
-                        {"event": "error", "data": {"error": f"Agent execution error: {str(exc)}"}}
+                        {"event": "error", "data": {"error": "Agent execution failed"}}
                     )
 
     except WebSocketDisconnect:

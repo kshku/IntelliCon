@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from sqlalchemy import desc, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth import get_current_user
 from app.db.session import get_session
 from app.db.sync import sync_all
 from app.models import (
@@ -21,6 +22,7 @@ from app.models import (
     Unit,
     Victim,
 )
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +67,11 @@ class UploadPayload(BaseModel):
 
 
 @router.get("/search", response_model=list[SearchResult])
-async def search_cases(q: str = "", session: AsyncSession = Depends(get_session)):
+async def search_cases(
+    q: str = "",
+    _user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
     if not q:
         query = select(CaseMaster).order_by(desc(CaseMaster.case_id)).limit(10)
     else:
@@ -92,7 +98,11 @@ async def search_cases(q: str = "", session: AsyncSession = Depends(get_session)
 
 
 @router.get("/{case_id}", response_model=CaseDetailsOut)
-async def get_case_details(case_id: int, session: AsyncSession = Depends(get_session)):
+async def get_case_details(
+    case_id: int,
+    _user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
     query = select(CaseMaster).where(CaseMaster.case_id == case_id)
     result = await session.execute(query)
     c = result.scalar_one_or_none()
@@ -155,7 +165,11 @@ async def get_case_details(case_id: int, session: AsyncSession = Depends(get_ses
 
 
 @router.post("/upload")
-async def upload_cases(payload: UploadPayload, session: AsyncSession = Depends(get_session)):
+async def upload_cases(
+    payload: UploadPayload,
+    _user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
     filename = payload.filename.lower()
     content = payload.file_content
     records = []
