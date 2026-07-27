@@ -7,14 +7,23 @@ const MAX_RECONNECT_INTERVAL = 30000;
 
 const getWsUrl = () => {
   const token = localStorage.getItem('token') || '';
-  const loc = window.location;
+  const apiBase = import.meta.env.VITE_API_URL;
   let baseUrl = '';
-  if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') {
-    baseUrl = 'ws://localhost:8000/api/chat/ws';
+
+  if (apiBase) {
+    const url = new URL('/api/chat/ws', apiBase);
+    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    baseUrl = url.toString();
   } else {
-    const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
-    baseUrl = `${proto}//${loc.host}/api/chat/ws`;
+    const loc = window.location;
+    if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') {
+      baseUrl = 'ws://localhost:8000/api/chat/ws';
+    } else {
+      const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+      baseUrl = `${proto}//${loc.host}/api/chat/ws`;
+    }
   }
+
   return token ? `${baseUrl}?token=${encodeURIComponent(token)}` : baseUrl;
 };
 
