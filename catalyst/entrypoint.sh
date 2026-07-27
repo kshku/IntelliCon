@@ -35,16 +35,7 @@ if [ ! -d "/var/lib/neo4j/data/databases" ] || [ ! -f "/var/lib/neo4j/data/datab
     echo "Neo4j password set."
 fi
 
-# ─── Build frontend if dist is empty ───
-if [ ! -f "/app/frontend/dist/index.html" ]; then
-    echo "Building frontend..."
-    cd /tmp/frontend-build
-    npm ci && npm run build
-    cp -r dist/* /app/frontend/dist/
-    echo "Frontend built."
-fi
-
-# ─── Write Caddyfile with correct port ───
+# ─── Write Caddyfile — routes API + analytics only (frontend is on Slate) ───
 cat > /etc/caddy/Caddyfile <<CADDYEOF
 :{$PORT} {
     header {
@@ -73,43 +64,10 @@ cat > /etc/caddy/Caddyfile <<CADDYEOF
     }
 
     handle {
-        reverse_proxy localhost:3000
+        respond "IntelliCon API — frontend is hosted on Catalyst Slate" 404
     }
 }
 CADDYEOF
-
-# ─── Write nginx config for frontend ───
-cat > /etc/nginx/conf.d/default.conf <<'NGINXEOF'
-server {
-    listen 3000;
-    root /app/frontend/dist;
-    index index.html;
-
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-
-    location /api/ {
-        proxy_pass http://localhost:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /api/chat/ws {
-        proxy_pass http://localhost:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_read_timeout 86400;
-    }
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-NGINXEOF
 
 # ─── Start all services via supervisord ───
 echo "Starting all services..."

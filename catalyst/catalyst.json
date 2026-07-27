@@ -25,9 +25,12 @@
         "REDIS_PASSWORD": "CHANGE_ME",
         "JWT_SECRET_KEY": "CHANGE_ME_TO_32_CHARS_MINIMUM",
         "LLM_PROVIDER": "openai",
-        "LLM_MODEL": "gpt-4",
+        "LLM_MODEL": "gpt-4o",
         "LLM_API_KEY": "CHANGE_ME",
-        "CORS_ORIGINS": "*"
+        "CORS_ORIGINS": "https://YOUR-SLATE-URL.catalystslate.com",
+        "SEED_ADMIN_PASSWORD": "CHANGE_ME",
+        "SEED_INVESTIGATOR_PASSWORD": "CHANGE_ME",
+        "SEED_SUPERVISOR_PASSWORD": "CHANGE_ME"
       }
     }
   ]
