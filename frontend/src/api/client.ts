@@ -1,6 +1,6 @@
 import { useAuthStore } from '../stores/authStore';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
 
 interface ApiOptions extends RequestInit {
   json?: unknown;

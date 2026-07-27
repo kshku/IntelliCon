@@ -11,7 +11,7 @@ const getWsUrl = () => {
   let baseUrl = '';
 
   if (apiBase) {
-    const url = new URL('/api/chat/ws', apiBase);
+    const url = new URL('/api/chat/ws', apiBase.replace(/\/+$/, ''));
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     baseUrl = url.toString();
   } else {
