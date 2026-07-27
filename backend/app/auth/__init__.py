@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 import bcrypt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy import select
@@ -11,7 +11,7 @@ from app.config import settings
 from app.db.session import get_session
 from app.models.user import User
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 
 
 def hash_password(password: str) -> str:
@@ -38,8 +38,17 @@ def decode_access_token(token: str) -> dict:
     return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])  # type: ignore[no-any-return]
 
 
+async def _extract_token(
+    request: Request, token: str | None = Depends(oauth2_scheme)
+) -> str | None:
+    if token:
+        return token
+    cookie_token = request.cookies.get("access_token")
+    return cookie_token
+
+
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    token: str | None = Depends(_extract_token),
     session: AsyncSession = Depends(get_session),
 ) -> User:
     credentials_exception = HTTPException(
@@ -47,6 +56,8 @@ async def get_current_user(
         detail="Invalid credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    if not token:
+        raise credentials_exception
     try:
         payload = decode_access_token(token)
         username: str | None = payload.get("sub")

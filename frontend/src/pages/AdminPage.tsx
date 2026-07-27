@@ -79,7 +79,8 @@ export function AdminPage() {
         if (Number(form.employee_id) !== editingUser.employee_id) body.employee_id = Number(form.employee_id);
         if (form.role !== editingUser.role) body.role = form.role;
         await apiFetch(`/admin/users/${editingUser.user_id}`, {
-          method: 'PUT',
+          method: 'POST',
+          headers: { 'X-HTTP-Method-Override': 'PUT' },
           json: body,
         });
       } else {
@@ -98,7 +99,10 @@ export function AdminPage() {
   const handleDeactivate = async (u: User) => {
     if (!confirm(t('admin.confirm_deactivate', { username: u.username }))) return;
     try {
-      await apiFetch(`/admin/users/${u.user_id}`, { method: 'DELETE' });
+      await apiFetch(`/admin/users/${u.user_id}`, {
+        method: 'POST',
+        headers: { 'X-HTTP-Method-Override': 'DELETE' },
+      });
       fetchUsers();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Unknown error');
