@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+export PATH="/usr/lib/postgresql/16/bin:$PATH"
+
 PORT="${X_ZOHO_CATALYST_LISTEN_PORT:-9000}"
 echo "=== IntelliCon Catalyst Entrypoint ==="
 echo "Listening on port: $PORT"
@@ -9,8 +11,10 @@ echo "Listening on port: $PORT"
 export POSTGRES_DB="${POSTGRES_DB:-intellicon}"
 export POSTGRES_USER="${POSTGRES_USER:-intellicon}"
 export POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-intellicon}"
+export NEO4J_USER="${NEO4J_USER:-neo4j}"
 export NEO4J_PASSWORD="${NEO4J_PASSWORD:-intellicon}"
 export REDIS_PASSWORD="${REDIS_PASSWORD:-intellicon}"
+export ENVIRONMENT="${ENVIRONMENT:-development}"
 
 # ─── Initialize PostgreSQL if needed ───
 PGDATA="/var/lib/postgresql/data"
@@ -37,7 +41,7 @@ fi
 
 # ─── Write Caddyfile — routes API + analytics only (frontend is on Slate) ───
 cat > /etc/caddy/Caddyfile <<CADDYEOF
-:{$PORT} {
+:$PORT {
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Frame-Options "SAMEORIGIN"
@@ -45,6 +49,10 @@ cat > /etc/caddy/Caddyfile <<CADDYEOF
         X-XSS-Protection "1; mode=block"
         Referrer-Policy "strict-origin-when-cross-origin"
         -Server
+    }
+
+    handle /analytics/* {
+        reverse_proxy localhost:8001
     }
 
     handle /api/chat/ws {
@@ -55,16 +63,8 @@ cat > /etc/caddy/Caddyfile <<CADDYEOF
         }
     }
 
-    handle /api/* {
-        reverse_proxy localhost:8000
-    }
-
-    handle /analytics/* {
-        reverse_proxy localhost:8001
-    }
-
     handle {
-        respond "IntelliCon API — frontend is hosted on Catalyst Slate" 404
+        reverse_proxy localhost:8000
     }
 }
 CADDYEOF
