@@ -5,8 +5,8 @@ ENV TZ=UTC
 
 # ─── Install system dependencies ───
 RUN apt-get update && apt-get install -y \
-    supervisor curl wget gnupg2 ca-certificates lsb-release \
-    python3.11 python3.11-venv python3-pip \
+    supervisor curl wget gnupg2 ca-certificates lsb-release gosu \
+    python3.11 python3.11-venv python3.11-distutils \
     redis-server \
     && rm -rf /var/lib/apt/lists/*
 
@@ -44,8 +44,10 @@ WORKDIR /app
 COPY backend/requirements.txt /tmp/backend-requirements.txt
 COPY analytics/requirements.txt /tmp/analytics-requirements.txt
 
-RUN pip3 install --no-cache-dir -r /tmp/backend-requirements.txt \
-    && pip3 install --no-cache-dir -r /tmp/analytics-requirements.txt
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 \
+    && python3.11 -m pip install --no-cache-dir --break-system-packages \
+    -r /tmp/backend-requirements.txt \
+    -r /tmp/analytics-requirements.txt
 
 # ─── Copy application code (no frontend — hosted on Catalyst Slate) ───
 COPY backend/ /app/backend/
@@ -59,7 +61,8 @@ RUN chmod +x /entrypoint.sh
 # ─── Create required directories ───
 RUN mkdir -p /var/lib/postgresql/data /var/log/supervisor \
     /var/lib/neo4j/data /var/lib/neo4j/logs \
-    /var/run/redis /var/log/redis /var/log/postgresql
+    /var/run/redis /var/log/redis /var/log/postgresql \
+    && chown -R postgres:postgres /var/lib/postgresql /var/log/postgresql
 
 # ─── Expose Catalyst port (overridden by X_ZOHO_CATALYST_LISTEN_PORT) ───
 EXPOSE 9000
