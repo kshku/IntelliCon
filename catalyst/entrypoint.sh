@@ -20,6 +20,9 @@ export ENVIRONMENT="${ENVIRONMENT:-development}"
 PGDATA="/var/lib/postgresql/data"
 if [ ! -s "$PGDATA/PG_VERSION" ]; then
     echo "Initializing PostgreSQL..."
+    rm -rf "$PGDATA"
+    mkdir -p "$PGDATA"
+    chown postgres:postgres "$PGDATA"
     gosu postgres initdb -D "$PGDATA"
     
     # Start postgres temporarily for user setup
