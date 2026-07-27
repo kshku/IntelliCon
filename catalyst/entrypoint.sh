@@ -19,6 +19,13 @@ export NEO4J_PASSWORD="${NEO4J_PASSWORD:-intellicon}"
 export REDIS_PASSWORD="${REDIS_PASSWORD:-intellicon}"
 export ENVIRONMENT="${ENVIRONMENT:-development}"
 
+# ─── Export backend config env vars (passed to supervisord children via inheritance) ───
+export CORS_ORIGINS="${CORS_ORIGINS:-[\"http://localhost:3000\",\"http://localhost:5173\"]}"
+export JWT_SECRET_KEY="${JWT_SECRET_KEY:-change-me-in-production}"
+export LLM_PROVIDER="${LLM_PROVIDER:-openai}"
+export LLM_MODEL="${LLM_MODEL:-gpt-4o}"
+export LLM_API_KEY="${LLM_API_KEY:-}"
+
 # ─── Initialize PostgreSQL if needed ───
 PGDATA="/var/lib/postgresql/data"
 if [ ! -s "$PGDATA/PG_VERSION" ]; then
@@ -42,16 +49,36 @@ if [ ! -s "$PGDATA/PG_VERSION" ]; then
     echo "PostgreSQL initialized."
 fi
 
+# ─── Ensure Neo4j directories have correct ownership (apt post-install may reset) ───
+chown -R neo4j:neo4j /var/lib/neo4j /var/log/neo4j 2>/dev/null || true
+
 # ─── Initialize Neo4j if needed ───
 if [ ! -d "/var/lib/neo4j/data/databases" ] || [ ! -f "/var/lib/neo4j/data/databases/neo4j/neostore" ]; then
     echo "Initializing Neo4j..."
-    neo4j-admin dbms initial-password "$NEO4J_PASSWORD" 2>/dev/null || true
+    gosu neo4j neo4j-admin dbms set-initial-password "$NEO4J_PASSWORD" || true
     echo "Neo4j password set."
 fi
+
+# ─── Extract first CORS origin for Caddy (CORS_ORIGINS is a JSON array) ───
+CORS_ORIGIN=$(echo "$CORS_ORIGINS" | tr -d '[]"' | cut -d',' -f1 | xargs)
+echo "Caddy CORS origin: $CORS_ORIGIN"
 
 # ─── Write Caddyfile — routes API + analytics only (frontend is on Slate) ───
 cat > /etc/caddy/Caddyfile <<CADDYEOF
 :$PORT {
+    @options method OPTIONS
+
+    handle @options {
+        header {
+            Access-Control-Allow-Origin "$CORS_ORIGIN"
+            Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+            Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With"
+            Access-Control-Allow-Credentials "true"
+            Access-Control-Max-Age "86400"
+        }
+        respond "" 204
+    }
+
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Frame-Options "SAMEORIGIN"
@@ -59,6 +86,8 @@ cat > /etc/caddy/Caddyfile <<CADDYEOF
         X-XSS-Protection "1; mode=block"
         Referrer-Policy "strict-origin-when-cross-origin"
         -Server
+        Access-Control-Allow-Origin "$CORS_ORIGIN"
+        Access-Control-Allow-Credentials "true"
     }
 
     handle /analytics/* {

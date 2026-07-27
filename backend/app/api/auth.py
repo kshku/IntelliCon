@@ -1,6 +1,7 @@
+import json
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,7 +39,19 @@ class UserResponse(BaseModel):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(body: LoginRequest, session: AsyncSession = Depends(get_session)):
+async def login(
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        data = json.loads(await request.body())
+        body = LoginRequest(**data)
+    except (json.JSONDecodeError, Exception) as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid request body: {e}",
+        )
     result = await session.execute(select(User).where(User.username == body.username))
     user = result.scalar_one_or_none()
 
@@ -56,6 +69,15 @@ async def login(body: LoginRequest, session: AsyncSession = Depends(get_session)
     token = create_access_token(
         data={"sub": user.username, "role": user.role},
         expires_delta=timedelta(minutes=settings.JWT_EXPIRATION_MINUTES),
+    )
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="none",
+        secure=True,
+        max_age=settings.JWT_EXPIRATION_MINUTES * 60,
+        path="/",
     )
     return TokenResponse(
         access_token=token,
