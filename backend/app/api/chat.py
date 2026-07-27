@@ -108,6 +108,7 @@ async def chat_websocket(
                     active_llm_model,
                     active_llm_provider,
                 )
+
                 active_provider = llm_provider or settings.LLM_PROVIDER
                 active_model = llm_model or settings.LLM_MODEL
 
