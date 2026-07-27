@@ -62,7 +62,8 @@ RUN chmod +x /entrypoint.sh
 RUN mkdir -p /var/lib/postgresql/data /var/log/supervisor \
     /var/lib/neo4j/data /var/lib/neo4j/logs \
     /var/run/redis /var/log/redis /var/log/postgresql \
-    && chown -R postgres:postgres /var/lib/postgresql /var/log/postgresql
+    /var/run/postgresql \
+    && chown -R postgres:postgres /var/lib/postgresql /var/log/postgresql /var/run/postgresql
 
 # ─── Expose Catalyst port (overridden by X_ZOHO_CATALYST_LISTEN_PORT) ───
 EXPOSE 9000
